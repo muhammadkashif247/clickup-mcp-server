@@ -6,7 +6,7 @@
 
 A Model Context Protocol (MCP) server for integrating ClickUp tasks with AI applications. This server allows AI agents to interact with ClickUp tasks, spaces, lists, and folders through a standardized protocol.
 
-> 🚧 **Status Update:** The Official ClickUp MCP Server, forked from this repo is released.  https://help.clickup.com/hc/en-us/articles/33335772678423-What-is-ClickUp-MCP 
+> 🚧 **Status Update:** The Official ClickUp MCP Server, forked from this repo is released. https://help.clickup.com/hc/en-us/articles/33335772678423-What-is-ClickUp-MCP
 
 ## Requirements
 
@@ -15,11 +15,13 @@ A Model Context Protocol (MCP) server for integrating ClickUp tasks with AI appl
 
 ## Setup
 
-1. Get your credentials:
-   - ClickUp API key from [ClickUp Settings](https://app.clickup.com/settings/apps)
-   - Team ID from your ClickUp workspace URL
-2. Choose either hosted installation (sends webhooks) or NPX installation (downloads to local path and installs dependencies)
-3. Use natural language to manage your workspace!
+See [SETUP.md](SETUP.md) for complete setup instructions covering:
+
+- **NPX Setup** (recommended - always uses latest version)
+- **Local Node.js Setup** (for development)
+- **Docker Setup** (for containerized deployments)
+
+Quick start: Get your ClickUp API key from [ClickUp Settings](https://app.clickup.com/settings/apps) and Team ID from your workspace URL, then follow the setup guide.
 
 ## Smithery Installation (Quick Start)
 
@@ -40,10 +42,7 @@ Add this entry to your client's MCP settings JSON file:
   "mcpServers": {
     "ClickUp": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@taazkareem/clickup-mcp-server@latest"
-      ],
+      "args": ["-y", "@taazkareem/clickup-mcp-server@latest"],
       "env": {
         "CLICKUP_API_KEY": "your-api-key",
         "CLICKUP_TEAM_ID": "your-team-id",
@@ -65,7 +64,9 @@ Or use this npx command:
 You can control which tools are available using two complementary environment variables:
 
 #### ENABLED_TOOLS (Recommended)
+
 Use `ENABLED_TOOLS` to specify exactly which tools should be available:
+
 ```bash
 # Environment variable
 export ENABLED_TOOLS="create_task,get_task,update_task,get_workspace_hierarchy"
@@ -75,7 +76,9 @@ export ENABLED_TOOLS="create_task,get_task,update_task,get_workspace_hierarchy"
 ```
 
 #### DISABLED_TOOLS (Legacy)
+
 Use `DISABLED_TOOLS` to disable specific tools while keeping all others enabled:
+
 ```bash
 # Environment variable
 export DISABLED_TOOLS="delete_task,delete_bulk_tasks"
@@ -85,11 +88,13 @@ export DISABLED_TOOLS="delete_task,delete_bulk_tasks"
 ```
 
 #### Precedence Rules
+
 - If `ENABLED_TOOLS` is specified, only those tools will be available (takes precedence over `DISABLED_TOOLS`)
 - If only `DISABLED_TOOLS` is specified, all tools except those listed will be available
 - If neither is specified, all tools are available (default behavior)
 
 **Example:**
+
 ```bash
 # Only enable task creation and reading tools
 npx -y @taazkareem/clickup-mcp-server@latest \
@@ -109,10 +114,7 @@ The server supports both modern **HTTP Streamable** transport (MCP Inspector com
   "mcpServers": {
     "ClickUp": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@taazkareem/clickup-mcp-server@latest"
-      ],
+      "args": ["-y", "@taazkareem/clickup-mcp-server@latest"],
       "env": {
         "CLICKUP_API_KEY": "your-api-key",
         "CLICKUP_TEAM_ID": "your-team-id",
@@ -125,6 +127,7 @@ The server supports both modern **HTTP Streamable** transport (MCP Inspector com
 ```
 
 **Endpoints:**
+
 - **Primary**: `http://127.0.0.1:3231/mcp` (Streamable HTTP)
 - **Legacy**: `http://127.0.0.1:3231/sse` (SSE for backwards compatibility)
 
@@ -134,25 +137,32 @@ The server supports both modern **HTTP Streamable** transport (MCP Inspector com
 npx -y @taazkareem/clickup-mcp-server@latest --env CLICKUP_API_KEY=your-api-key --env CLICKUP_TEAM_ID=your-team-id --env ENABLE_SSE=true --env PORT=3231
 ```
 
+### locally run and test
+
+```bash
+npm start -- --env CLICKUP_API_KEY=your-api-key --env CLICKUP_TEAM_ID=your-api-key --env DOCUMENT_SUPPORT=true --env ENABLE_SSE=true --env PORT=3231
+```
+
 Available configuration options:
 
-| Option | Description | Default |
-| ------ | ----------- | ------- |
-| `ENABLED_TOOLS` | Comma-separated list of tools to enable (takes precedence) | All tools |
-| `DISABLED_TOOLS` | Comma-separated list of tools to disable | None |
-| `ENABLE_SSE` | Enable the HTTP/SSE transport | `false` |
-| `PORT` | Port for the HTTP server | `3231` |
-| `ENABLE_STDIO` | Enable the STDIO transport | `true` |
-| `ENABLE_SECURITY_FEATURES` | Enable security headers and logging | `false` |
-| `ENABLE_HTTPS` | Enable HTTPS/TLS encryption | `false` |
-| `ENABLE_ORIGIN_VALIDATION` | Validate Origin header against whitelist | `false` |
-| `ENABLE_RATE_LIMIT` | Enable rate limiting protection | `false` |
+| Option                     | Description                                                | Default   |
+| -------------------------- | ---------------------------------------------------------- | --------- |
+| `ENABLED_TOOLS`            | Comma-separated list of tools to enable (takes precedence) | All tools |
+| `DISABLED_TOOLS`           | Comma-separated list of tools to disable                   | None      |
+| `ENABLE_SSE`               | Enable the HTTP/SSE transport                              | `false`   |
+| `PORT`                     | Port for the HTTP server                                   | `3231`    |
+| `ENABLE_STDIO`             | Enable the STDIO transport                                 | `true`    |
+| `ENABLE_SECURITY_FEATURES` | Enable security headers and logging                        | `false`   |
+| `ENABLE_HTTPS`             | Enable HTTPS/TLS encryption                                | `false`   |
+| `ENABLE_ORIGIN_VALIDATION` | Validate Origin header against whitelist                   | `false`   |
+| `ENABLE_RATE_LIMIT`        | Enable rate limiting protection                            | `false`   |
 
 ### 🔒 Security Features
 
 The server includes optional security enhancements for production deployments. All security features are **opt-in** and **disabled by default** to maintain backwards compatibility.
 
 **Quick security setup:**
+
 ```bash
 # Generate SSL certificates for HTTPS
 ./scripts/generate-ssl-cert.sh
@@ -168,6 +178,7 @@ npx @taazkareem/clickup-mcp-server@latest --env CLICKUP_API_KEY=your-key --env C
 ```
 
 **HTTPS Endpoints:**
+
 - **Primary**: `https://127.0.0.1:3443/mcp` (Streamable HTTPS)
 - **Legacy**: `https://127.0.0.1:3443/sse` (SSE HTTPS for backwards compatibility)
 - **Health**: `https://127.0.0.1:3443/health` (Health check)
@@ -201,67 +212,67 @@ npm run sse-client
 
 ## Features
 
-| 📝 Task Management                                                                                                                                                                                                                                                   | 🏷️ Tag Management                                                                                                                                                                                                                                                        |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| • Create, update, and delete tasks<br>• Move and duplicate tasks anywhere<br>• Support for single and bulk operations<br>• Set start/due dates with natural language<br>• Create and manage subtasks<br>• Add comments and attachments | • Create, update, and delete space tags<br>• Add and remove tags from tasks<br>• Use natural language color commands<br>• Automatic contrasting foreground colors<br>• View all space tags<br>• Tag-based task organization across workspace |
-| ⏱️ **Time Tracking**                                                                                                                                                                                                                                          | 🌳 **Workspace Organization**                                                                                                                                                                                                                                         |
-| • View time entries for tasks<br>• Start/stop time tracking on tasks<br>• Add manual time entries<br>• Delete time entries<br>• View currently running timer<br>• Track billable and non-billable time                                 | • Navigate spaces, folders, and lists<br>• Create and manage folders<br>• Organize lists within spaces<br>• Create lists in folders<br>• View workspace hierarchy<br>• Efficient path navigation                                             |
-| 📄 **Document Management**                                                                                                                                                                                                                                      | 👥 **Member Management**                                                                                                                                                                                                                                             |
-| • Document Listing through all workspace<br>• Document Page listing<br>• Document Page Details<br>• Document Creation<br>• Document page update (append & prepend)                                                                       | • Find workspace members by name or email<br>• Resolve assignees for tasks<br>• View member details and permissions<br>• Assign tasks to users during creation and updates<br>• Support for user IDs, emails, or usernames<br>• Team-wide user management                            |
-| ⚡ **Integration Features**                                                                                                                                                                                                                                      | 🏗️ **Architecture & Performance**                                                                                                                                                                                                                                        |
-| • Global name or ID-based lookups<br>• Case-insensitive matching<br>• Markdown formatting support<br>• Built-in rate limiting<br>• Error handling and validation<br>• Comprehensive API coverage                                             | • **70% codebase reduction** for improved performance<br>• **Unified architecture** across all transport types<br>• **Zero code duplication**<br>• **HTTP Streamable transport** (MCP Inspector compatible)<br>• **Legacy SSE support** for backwards compatibility |
+| 📝 Task Management                                                                                                                                                                                                                     | 🏷️ Tag Management                                                                                                                                                                                                                                                   |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| • Create, update, and delete tasks<br>• Move and duplicate tasks anywhere<br>• Support for single and bulk operations<br>• Set start/due dates with natural language<br>• Create and manage subtasks<br>• Add comments and attachments | • Create, update, and delete space tags<br>• Add and remove tags from tasks<br>• Use natural language color commands<br>• Automatic contrasting foreground colors<br>• View all space tags<br>• Tag-based task organization across workspace                        |
+| ⏱️ **Time Tracking**                                                                                                                                                                                                                   | 🌳 **Workspace Organization**                                                                                                                                                                                                                                       |
+| • View time entries for tasks<br>• Start/stop time tracking on tasks<br>• Add manual time entries<br>• Delete time entries<br>• View currently running timer<br>• Track billable and non-billable time                                 | • Navigate spaces, folders, and lists<br>• Create and manage folders<br>• Organize lists within spaces<br>• Create lists in folders<br>• View workspace hierarchy<br>• Efficient path navigation                                                                    |
+| 📄 **Document Management**                                                                                                                                                                                                             | 👥 **Member Management**                                                                                                                                                                                                                                            |
+| • Document Listing through all workspace<br>• Document Page listing<br>• Document Page Details<br>• Document Creation<br>• Document page update (append & prepend)                                                                     | • Find workspace members by name or email<br>• Resolve assignees for tasks<br>• View member details and permissions<br>• Assign tasks to users during creation and updates<br>• Support for user IDs, emails, or usernames<br>• Team-wide user management           |
+| ⚡ **Integration Features**                                                                                                                                                                                                            | 🏗️ **Architecture & Performance**                                                                                                                                                                                                                                   |
+| • Global name or ID-based lookups<br>• Case-insensitive matching<br>• Markdown formatting support<br>• Built-in rate limiting<br>• Error handling and validation<br>• Comprehensive API coverage                                       | • **70% codebase reduction** for improved performance<br>• **Unified architecture** across all transport types<br>• **Zero code duplication**<br>• **HTTP Streamable transport** (MCP Inspector compatible)<br>• **Legacy SSE support** for backwards compatibility |
 
 ## Available Tools (36 Total)
 
-| Tool                                                               | Description                     | Required Parameters                                                                                                          |
-| ------------------------------------------------------------------ | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| [get_workspace_hierarchy](docs/user-guide.md#workspace-navigation) | Get workspace structure         | None                                                                                                                         |
-| [create_task](docs/user-guide.md#task-management)                  | Create a task                   | `name`, (`listId`/`listName`)                                                                                          |
-| [create_bulk_tasks](docs/user-guide.md#task-management)            | Create multiple tasks           | `tasks[]`                                                                                                                  |
-| [update_task](docs/user-guide.md#task-management)                  | Modify task                     | `taskId`/`taskName`                                                                                                      |
-| [update_bulk_tasks](docs/user-guide.md#task-management)            | Update multiple tasks           | `tasks[]` with IDs or names                                                                                                |
-| [get_tasks](docs/user-guide.md#task-management)                    | Get tasks from list             | `listId`/`listName`                                                                                                      |
-| [get_task](docs/user-guide.md#task-management)                     | Get single task details         | `taskId`/`taskName` (with smart disambiguation)                                                                          |
-| [get_workspace_tasks](docs/user-guide.md#task-management)          | Get tasks with filtering        | At least one filter (tags, list_ids, space_ids, etc.)                                                                        |
-| [get_task_comments](docs/user-guide.md#task-management)            | Get comments on a task          | `taskId`/`taskName`                                                                                                      |
-| [create_task_comment](docs/user-guide.md#task-management)          | Add a comment to a task         | `commentText`, (`taskId`/(`taskName`+`listName`))                                                                    |
-| [attach_task_file](docs/user-guide.md#task-management)             | Attach file to a task           | `taskId`/`taskName`, (`file_data` or `file_url`)                                                                     |
-| [delete_task](docs/user-guide.md#task-management)                  | Remove task                     | `taskId`/`taskName`                                                                                                      |
-| [delete_bulk_tasks](docs/user-guide.md#task-management)            | Remove multiple tasks           | `tasks[]` with IDs or names                                                                                                |
-| [move_task](docs/user-guide.md#task-management)                    | Move task                       | `taskId`/`taskName`, `listId`/`listName`                                                                             |
-| [move_bulk_tasks](docs/user-guide.md#task-management)              | Move multiple tasks             | `tasks[]` with IDs or names, target list                                                                                   |
-| [duplicate_task](docs/user-guide.md#task-management)               | Copy task                       | `taskId`/`taskName`, `listId`/`listName`                                                                             |
-| [create_list](docs/user-guide.md#list-management)                  | Create list in space            | `name`, `spaceId`/`spaceName`                                                                                          |
-| [create_folder](docs/user-guide.md#folder-management)              | Create folder                   | `name`, `spaceId`/`spaceName`                                                                                          |
-| [create_list_in_folder](docs/user-guide.md#list-management)        | Create list in folder           | `name`, `folderId`/`folderName`                                                                                        |
-| [get_folder](docs/user-guide.md#folder-management)                 | Get folder details              | `folderId`/`folderName`                                                                                                  |
-| [update_folder](docs/user-guide.md#folder-management)              | Update folder properties        | `folderId`/`folderName`                                                                                                  |
-| [delete_folder](docs/user-guide.md#folder-management)              | Delete folder                   | `folderId`/`folderName`                                                                                                  |
-| [get_list](docs/user-guide.md#list-management)                     | Get list details                | `listId`/`listName`                                                                                                      |
-| [update_list](docs/user-guide.md#list-management)                  | Update list properties          | `listId`/`listName`                                                                                                      |
-| [delete_list](docs/user-guide.md#list-management)                  | Delete list                     | `listId`/`listName`                                                                                                      |
-| [get_space_tags](docs/user-guide.md#tag-management)                | Get space tags                  | `spaceId`/`spaceName`                                                                                                    |
-| [create_space_tag](docs/user-guide.md#tag-management)              | Create tag                      | `tagName`, `spaceId`/`spaceName`                                                                                       |
-| [update_space_tag](docs/user-guide.md#tag-management)              | Update tag                      | `tagName`, `spaceId`/`spaceName`                                                                                       |
-| [delete_space_tag](docs/user-guide.md#tag-management)              | Delete tag                      | `tagName`, `spaceId`/`spaceName`                                                                                       |
-| [add_tag_to_task](docs/user-guide.md#tag-management)               | Add tag to task                 | `tagName`, `taskId`/(`taskName`+`listName`)                                                                          |
-| [remove_tag_from_task](docs/user-guide.md#tag-management)          | Remove tag from task            | `tagName`, `taskId`/(`taskName`+`listName`)                                                                          |
-| [get_task_time_entries](docs/user-guide.md#time-tracking)          | Get time entries for a task     | `taskId`/`taskName`                                                                                                      |
-| [start_time_tracking](docs/user-guide.md#time-tracking)            | Start time tracking on a task   | `taskId`/`taskName`                                                                                                      |
-| [stop_time_tracking](docs/user-guide.md#time-tracking)             | Stop current time tracking      | None                                                                                                                         |
-| [add_time_entry](docs/user-guide.md#time-tracking)                 | Add manual time entry to a task | `taskId`/`taskName`, `start`, `duration`                                                                             |
-| [delete_time_entry](docs/user-guide.md#time-tracking)              | Delete a time entry             | `timeEntryId`                                                                                                              |
-| [get_current_time_entry](docs/user-guide.md#time-tracking)         | Get currently running timer     | None                                                                                                                         |
-| [get_workspace_members](docs/user-guide.md#member-management)      | Get all workspace members       | None                                                                                                                         |
-| [find_member_by_name](docs/user-guide.md#member-management)        | Find member by name or email    | `nameOrEmail`                                                                                                               |
-| [resolve_assignees](docs/user-guide.md#member-management)          | Resolve member names to IDs     | `assignees[]`                                                                                                              |
-| [create_document](docs/user-guide.md#document-management)          | Create a document               | `workspaceId`, `name`, `parentId`/`parentType`, `visibility`, `create_pages`                                     |
-| [get_document](docs/user-guide.md#document-management)             | Get a document                  | `workspaceId`/`documentId`                                                                                               |
+| Tool                                                               | Description                     | Required Parameters                                                                                        |
+| ------------------------------------------------------------------ | ------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| [get_workspace_hierarchy](docs/user-guide.md#workspace-navigation) | Get workspace structure         | None                                                                                                       |
+| [create_task](docs/user-guide.md#task-management)                  | Create a task                   | `name`, (`listId`/`listName`)                                                                              |
+| [create_bulk_tasks](docs/user-guide.md#task-management)            | Create multiple tasks           | `tasks[]`                                                                                                  |
+| [update_task](docs/user-guide.md#task-management)                  | Modify task                     | `taskId`/`taskName`                                                                                        |
+| [update_bulk_tasks](docs/user-guide.md#task-management)            | Update multiple tasks           | `tasks[]` with IDs or names                                                                                |
+| [get_tasks](docs/user-guide.md#task-management)                    | Get tasks from list             | `listId`/`listName`                                                                                        |
+| [get_task](docs/user-guide.md#task-management)                     | Get single task details         | `taskId`/`taskName` (with smart disambiguation)                                                            |
+| [get_workspace_tasks](docs/user-guide.md#task-management)          | Get tasks with filtering        | At least one filter (tags, list_ids, space_ids, etc.)                                                      |
+| [get_task_comments](docs/user-guide.md#task-management)            | Get comments on a task          | `taskId`/`taskName`                                                                                        |
+| [create_task_comment](docs/user-guide.md#task-management)          | Add a comment to a task         | `commentText`, (`taskId`/(`taskName`+`listName`))                                                          |
+| [attach_task_file](docs/user-guide.md#task-management)             | Attach file to a task           | `taskId`/`taskName`, (`file_data` or `file_url`)                                                           |
+| [delete_task](docs/user-guide.md#task-management)                  | Remove task                     | `taskId`/`taskName`                                                                                        |
+| [delete_bulk_tasks](docs/user-guide.md#task-management)            | Remove multiple tasks           | `tasks[]` with IDs or names                                                                                |
+| [move_task](docs/user-guide.md#task-management)                    | Move task                       | `taskId`/`taskName`, `listId`/`listName`                                                                   |
+| [move_bulk_tasks](docs/user-guide.md#task-management)              | Move multiple tasks             | `tasks[]` with IDs or names, target list                                                                   |
+| [duplicate_task](docs/user-guide.md#task-management)               | Copy task                       | `taskId`/`taskName`, `listId`/`listName`                                                                   |
+| [create_list](docs/user-guide.md#list-management)                  | Create list in space            | `name`, `spaceId`/`spaceName`                                                                              |
+| [create_folder](docs/user-guide.md#folder-management)              | Create folder                   | `name`, `spaceId`/`spaceName`                                                                              |
+| [create_list_in_folder](docs/user-guide.md#list-management)        | Create list in folder           | `name`, `folderId`/`folderName`                                                                            |
+| [get_folder](docs/user-guide.md#folder-management)                 | Get folder details              | `folderId`/`folderName`                                                                                    |
+| [update_folder](docs/user-guide.md#folder-management)              | Update folder properties        | `folderId`/`folderName`                                                                                    |
+| [delete_folder](docs/user-guide.md#folder-management)              | Delete folder                   | `folderId`/`folderName`                                                                                    |
+| [get_list](docs/user-guide.md#list-management)                     | Get list details                | `listId`/`listName`                                                                                        |
+| [update_list](docs/user-guide.md#list-management)                  | Update list properties          | `listId`/`listName`                                                                                        |
+| [delete_list](docs/user-guide.md#list-management)                  | Delete list                     | `listId`/`listName`                                                                                        |
+| [get_space_tags](docs/user-guide.md#tag-management)                | Get space tags                  | `spaceId`/`spaceName`                                                                                      |
+| [create_space_tag](docs/user-guide.md#tag-management)              | Create tag                      | `tagName`, `spaceId`/`spaceName`                                                                           |
+| [update_space_tag](docs/user-guide.md#tag-management)              | Update tag                      | `tagName`, `spaceId`/`spaceName`                                                                           |
+| [delete_space_tag](docs/user-guide.md#tag-management)              | Delete tag                      | `tagName`, `spaceId`/`spaceName`                                                                           |
+| [add_tag_to_task](docs/user-guide.md#tag-management)               | Add tag to task                 | `tagName`, `taskId`/(`taskName`+`listName`)                                                                |
+| [remove_tag_from_task](docs/user-guide.md#tag-management)          | Remove tag from task            | `tagName`, `taskId`/(`taskName`+`listName`)                                                                |
+| [get_task_time_entries](docs/user-guide.md#time-tracking)          | Get time entries for a task     | `taskId`/`taskName`                                                                                        |
+| [start_time_tracking](docs/user-guide.md#time-tracking)            | Start time tracking on a task   | `taskId`/`taskName`                                                                                        |
+| [stop_time_tracking](docs/user-guide.md#time-tracking)             | Stop current time tracking      | None                                                                                                       |
+| [add_time_entry](docs/user-guide.md#time-tracking)                 | Add manual time entry to a task | `taskId`/`taskName`, `start`, `duration`                                                                   |
+| [delete_time_entry](docs/user-guide.md#time-tracking)              | Delete a time entry             | `timeEntryId`                                                                                              |
+| [get_current_time_entry](docs/user-guide.md#time-tracking)         | Get currently running timer     | None                                                                                                       |
+| [get_workspace_members](docs/user-guide.md#member-management)      | Get all workspace members       | None                                                                                                       |
+| [find_member_by_name](docs/user-guide.md#member-management)        | Find member by name or email    | `nameOrEmail`                                                                                              |
+| [resolve_assignees](docs/user-guide.md#member-management)          | Resolve member names to IDs     | `assignees[]`                                                                                              |
+| [create_document](docs/user-guide.md#document-management)          | Create a document               | `workspaceId`, `name`, `parentId`/`parentType`, `visibility`, `create_pages`                               |
+| [get_document](docs/user-guide.md#document-management)             | Get a document                  | `workspaceId`/`documentId`                                                                                 |
 | [list_documents](docs/user-guide.md#document-management)           | List documents                  | `workspaceId`, `documentId`/`creator`/`deleted`/`archived`/`parent_id`/`parent_type`/`limit`/`next_cursor` |
-| [list_document_pages](docs/user-guide.md#document-management)      | List document pages             | `documentId`/`documentName`                                                                                              |
-| [get_document_pages](docs/user-guide.md#document-management)       | Get document pages              | `documentId`/`documentName`, `pageIds`                                                                                 |
-| [create_document_pages](docs/user-guide.md#document-management)    | Create a document page          | `workspaceId`/`documentId`, `parent_page_id`/`name`/`sub_title`,`content`/`content_format`                     |
-| [update_document_page](docs/user-guide.md#document-management)     | Update a document page          | `workspaceId`/`documentId`, `name`/`sub_title`,`content`/`content_edit_mode`/`content_format`                  |
+| [list_document_pages](docs/user-guide.md#document-management)      | List document pages             | `documentId`/`documentName`                                                                                |
+| [get_document_pages](docs/user-guide.md#document-management)       | Get document pages              | `documentId`/`documentName`, `pageIds`                                                                     |
+| [create_document_pages](docs/user-guide.md#document-management)    | Create a document page          | `workspaceId`/`documentId`, `parent_page_id`/`name`/`sub_title`,`content`/`content_format`                 |
+| [update_document_page](docs/user-guide.md#document-management)     | Update a document page          | `workspaceId`/`documentId`, `name`/`sub_title`,`content`/`content_edit_mode`/`content_format`              |
 
 See [full documentation](docs/user-guide.md) for optional parameters and advanced usage.
 
@@ -270,19 +281,21 @@ See [full documentation](docs/user-guide.md) for optional parameters and advance
 When creating or updating tasks, you can assign users using the `assignees` parameter. The parameter accepts an array of user IDs, emails, or usernames:
 
 **Creating tasks with assignees:**
+
 ```json
 {
   "name": "New Task",
   "description": "This is a new task.",
-  "assignees": ["jdoe@example.com", "Jane Smith"]  // Emails, usernames, or user IDs
+  "assignees": ["jdoe@example.com", "Jane Smith"] // Emails, usernames, or user IDs
 }
 ```
 
 **Updating task assignees:**
+
 ```json
 {
   "taskId": "abc123",
-  "assignees": ["newuser@example.com"]  // Replace existing assignees
+  "assignees": ["newuser@example.com"] // Replace existing assignees
 }
 ```
 
