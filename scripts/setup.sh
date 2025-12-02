@@ -49,3 +49,7 @@ echo "🧪 Test the server locally:"
 echo "   CLICKUP_API_KEY=your-key CLICKUP_TEAM_ID=your-team npm start"
 echo ""
 
+BUILD_PATH="$(pwd)/build/index.js"
+echo "📍 Build path (for Cursor MCP config):"
+echo "   $BUILD_PATH"
+
