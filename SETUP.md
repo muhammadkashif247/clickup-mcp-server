@@ -25,6 +25,24 @@ This guide covers three ways to set up the ClickUp MCP Server: NPX (recommended)
      - `CLICKUP_TEAM_ID`: `your-team-id-here`
      - `DOCUMENT_SUPPORT`: `true`
 
+**Alternative:** If you prefer to manually edit the configuration file, use this JSON structure:
+
+```json
+{
+  "mcpServers": {
+    "ClickUp": {
+      "command": "npx",
+      "args": ["-y", "@taazkareem/clickup-mcp-server@latest"],
+      "env": {
+        "CLICKUP_API_KEY": "YOUR_CLICKUP_API_KEY_HERE",
+        "CLICKUP_TEAM_ID": "YOUR_CLICKUP_TEAM_ID_HERE",
+        "DOCUMENT_SUPPORT": "true"
+      }
+    }
+  }
+}
+```
+
 ### Step 2: Verify Installation
 
 Test the NPX command manually:
@@ -74,6 +92,26 @@ npm run build
      - `CLICKUP_API_KEY`: `your-api-key-here`
      - `CLICKUP_TEAM_ID`: `your-team-id-here`
      - `DOCUMENT_SUPPORT`: `true`
+
+**Alternative:** If you prefer to manually edit the configuration file, use this JSON structure:
+
+```json
+{
+  "mcpServers": {
+    "ClickUp": {
+      "command": "node",
+      "args": ["/absolute/path/to/your/project/build/index.js"],
+      "env": {
+        "CLICKUP_API_KEY": "YOUR_CLICKUP_API_KEY_HERE",
+        "CLICKUP_TEAM_ID": "YOUR_CLICKUP_TEAM_ID_HERE",
+        "DOCUMENT_SUPPORT": "true"
+      }
+    }
+  }
+}
+```
+
+**Important:** Replace `/absolute/path/to/your/project/build/index.js` with the actual absolute path to your `build/index.js` file.
 
 ### Step 4: Verify Installation
 
