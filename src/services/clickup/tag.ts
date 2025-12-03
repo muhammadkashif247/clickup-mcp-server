@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * ClickUp Tag Service
  * 
  * Provides access to ClickUp API endpoints for tag management:
@@ -24,9 +21,9 @@ export class ClickUpTagService extends BaseClickUpService {
   async getSpaceTags(spaceId: string): Promise<ServiceResponse<ClickUpTag[]>> {
     try {
       this.logger.debug(`Getting tags for space: ${spaceId}`);
-      
+
       const response = await this.client.get<SpaceTagsResponse>(`/space/${spaceId}/tag`);
-      
+
       return {
         success: true,
         data: response.data.tags
@@ -51,12 +48,12 @@ export class ClickUpTagService extends BaseClickUpService {
    * @returns Promise with created tag
    */
   async createSpaceTag(
-    spaceId: string, 
+    spaceId: string,
     tagData: CreateSpaceTagData
   ): Promise<ServiceResponse<ClickUpTag>> {
     try {
       this.logger.debug(`Creating tag "${tagData.tag_name}" in space: ${spaceId}`);
-      
+
       // Send tag data wrapped in a 'tag' object
       const response = await this.client.post<{ tag: ClickUpTag }>(
         `/space/${spaceId}/tag`,
@@ -68,7 +65,7 @@ export class ClickUpTagService extends BaseClickUpService {
           }
         }
       );
-      
+
       return {
         success: true,
         data: response.data.tag
@@ -100,15 +97,15 @@ export class ClickUpTagService extends BaseClickUpService {
   ): Promise<ServiceResponse<ClickUpTag>> {
     try {
       this.logger.debug(`Updating tag "${tagName}" in space: ${spaceId}`);
-      
+
       // Encode the tag name in the URL
       const encodedTagName = encodeURIComponent(tagName);
-      
+
       const response = await this.client.put<{ tag: ClickUpTag }>(
         `/space/${spaceId}/tag/${encodedTagName}`,
         updateData
       );
-      
+
       return {
         success: true,
         data: response.data.tag
@@ -138,12 +135,12 @@ export class ClickUpTagService extends BaseClickUpService {
   ): Promise<ServiceResponse<void>> {
     try {
       this.logger.debug(`Deleting tag "${tagName}" from space: ${spaceId}`);
-      
+
       // Encode the tag name in the URL
       const encodedTagName = encodeURIComponent(tagName);
-      
+
       await this.client.delete(`/space/${spaceId}/tag/${encodedTagName}`);
-      
+
       return {
         success: true
       };
@@ -172,7 +169,7 @@ export class ClickUpTagService extends BaseClickUpService {
   ): Promise<ServiceResponse<{ tagAdded: boolean }>> {
     try {
       this.logger.debug(`Adding tag "${tagName}" to task: ${taskId}`);
-      
+
       // First get the task to get its space ID
       const taskResponse = await this.client.get<any>(`/task/${taskId}`);
       if (!taskResponse.data?.space?.id) {
@@ -188,7 +185,7 @@ export class ClickUpTagService extends BaseClickUpService {
       // Get space tags to verify tag exists
       const spaceId = taskResponse.data.space.id;
       const spaceTags = await this.getSpaceTags(spaceId);
-      
+
       if (!spaceTags.success || !spaceTags.data) {
         return {
           success: false,
@@ -214,10 +211,10 @@ export class ClickUpTagService extends BaseClickUpService {
 
       // Encode the tag name in the URL
       const encodedTagName = encodeURIComponent(tagName);
-      
+
       // Add the tag
       await this.client.post(`/task/${taskId}/tag/${encodedTagName}`, {});
-      
+
       // Verify the tag was added by getting the task again
       const verifyResponse = await this.client.get<any>(`/task/${taskId}`);
       const tagAdded = verifyResponse.data?.tags?.some(tag => tag.name === tagName) ?? false;
@@ -231,7 +228,7 @@ export class ClickUpTagService extends BaseClickUpService {
           }
         };
       }
-      
+
       return {
         success: true,
         data: { tagAdded: true }
@@ -261,12 +258,12 @@ export class ClickUpTagService extends BaseClickUpService {
   ): Promise<ServiceResponse<void>> {
     try {
       this.logger.debug(`Removing tag "${tagName}" from task: ${taskId}`);
-      
+
       // Encode the tag name in the URL
       const encodedTagName = encodeURIComponent(tagName);
-      
+
       await this.client.delete(`/task/${taskId}/tag/${encodedTagName}`);
-      
+
       return {
         success: true
       };

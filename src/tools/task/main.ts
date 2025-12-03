@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * ClickUp MCP Task Tools
  * 
  * This is the main task module that connects tool definitions to their handlers.
@@ -189,48 +186,48 @@ export const handleGetWorkspaceTasks = createHandlerWrapper(
 
 // Tool definitions with their handler mappings
 export const tools = [
-  { 
-    definition: createTaskTool, 
+  {
+    definition: createTaskTool,
     handler: createTaskHandler
   },
-  { 
-    definition: updateTaskTool, 
+  {
+    definition: updateTaskTool,
     handler: updateTaskHandler
   },
-  { 
-    definition: moveTaskTool, 
+  {
+    definition: moveTaskTool,
     handler: moveTaskHandler
   },
-  { 
-    definition: duplicateTaskTool, 
+  {
+    definition: duplicateTaskTool,
     handler: duplicateTaskHandler
   },
-  { 
-    definition: getTaskTool, 
+  {
+    definition: getTaskTool,
     handler: getTaskHandler
   },
-  { 
-    definition: getTasksTool, 
+  {
+    definition: getTasksTool,
     handler: getTasksHandler
   },
-  { 
-    definition: getTaskCommentsTool, 
+  {
+    definition: getTaskCommentsTool,
     handler: getTaskCommentsHandler
   },
-  { 
-    definition: createTaskCommentTool, 
+  {
+    definition: createTaskCommentTool,
     handler: createTaskCommentHandler
   },
-  { 
-    definition: deleteTaskTool, 
+  {
+    definition: deleteTaskTool,
     handler: deleteTaskHandler
   },
-  { 
-    definition: getWorkspaceTasksTool, 
+  {
+    definition: getWorkspaceTasksTool,
     handler: getWorkspaceTasksHandler
   },
-  { 
-    definition: createBulkTasksTool, 
+  {
+    definition: createBulkTasksTool,
     handler: async (params: any) => {
       const result = await createBulkTasksHandler(params) as BatchResult<ClickUpTask>;
       return {
@@ -243,8 +240,8 @@ export const tools = [
       };
     }
   },
-  { 
-    definition: updateBulkTasksTool, 
+  {
+    definition: updateBulkTasksTool,
     handler: async (params: any) => {
       const result = await updateBulkTasksHandler(params) as BatchResult<ClickUpTask>;
       return {
@@ -257,8 +254,8 @@ export const tools = [
       };
     }
   },
-  { 
-    definition: moveBulkTasksTool, 
+  {
+    definition: moveBulkTasksTool,
     handler: async (params: any) => {
       const result = await moveBulkTasksHandler(params) as BatchResult<ClickUpTask>;
       return {
@@ -271,8 +268,8 @@ export const tools = [
       };
     }
   },
-  { 
-    definition: deleteBulkTasksTool, 
+  {
+    definition: deleteBulkTasksTool,
     handler: async (params: any) => {
       const result = await deleteBulkTasksHandler(params) as BatchResult<void>;
       return {
@@ -285,7 +282,7 @@ export const tools = [
       };
     }
   },
-   {
+  {
     definition: getWorkspaceMembersTool,
     handler: handleGetWorkspaceMembers
   },

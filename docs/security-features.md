@@ -4,13 +4,13 @@ The ClickUp MCP Server includes optional security enhancements that can be enabl
 
 ## 🔒 Security Features Overview
 
-| Feature | Environment Variable | Default | Description |
-|---------|---------------------|---------|-------------|
-| **Security Features** | `ENABLE_SECURITY_FEATURES` | `false` | Master switch for security headers and logging |
-| **HTTPS Support** | `ENABLE_HTTPS` | `false` | Enables HTTPS/TLS encryption |
-| **Origin Validation** | `ENABLE_ORIGIN_VALIDATION` | `false` | Validates Origin header against whitelist |
-| **Rate Limiting** | `ENABLE_RATE_LIMIT` | `false` | Protects against DoS attacks |
-| **CORS Configuration** | `ENABLE_CORS` | `false` | Configures cross-origin resource sharing |
+| Feature                | Environment Variable       | Default | Description                                    |
+| ---------------------- | -------------------------- | ------- | ---------------------------------------------- |
+| **Security Features**  | `ENABLE_SECURITY_FEATURES` | `false` | Master switch for security headers and logging |
+| **HTTPS Support**      | `ENABLE_HTTPS`             | `false` | Enables HTTPS/TLS encryption                   |
+| **Origin Validation**  | `ENABLE_ORIGIN_VALIDATION` | `false` | Validates Origin header against whitelist      |
+| **Rate Limiting**      | `ENABLE_RATE_LIMIT`        | `false` | Protects against DoS attacks                   |
+| **CORS Configuration** | `ENABLE_CORS`              | `false` | Configures cross-origin resource sharing       |
 
 ## 🚀 Quick Security Setup
 
@@ -76,6 +76,7 @@ HTTPS_PORT=3443                   # Optional: HTTPS port (default: 3443)
 ⚠️ **IMPORTANT:** SSL certificates are machine-specific and should NEVER be committed to git.
 
 For development, generate self-signed certificates:
+
 ```bash
 # Run the included certificate generation script
 ./scripts/generate-ssl-cert.sh
@@ -90,11 +91,13 @@ openssl req -new -x509 -key ssl/server.key -out ssl/server.crt -days 365 \
 🔒 **Security Note:** The `ssl/` directory is in `.gitignore` to prevent accidental commits.
 
 **Production Certificates:**
+
 - Use certificates from a trusted Certificate Authority (Let's Encrypt, etc.)
 - Ensure certificates include appropriate Subject Alternative Names
 - Set up automatic certificate renewal
 
 **Behavior:**
+
 - ✅ Runs both HTTP and HTTPS servers simultaneously
 - ✅ HTTPS endpoints available on port 3443 (configurable)
 - ✅ HTTP endpoints remain on port 3231 for backwards compatibility
@@ -102,6 +105,7 @@ openssl req -new -x509 -key ssl/server.key -out ssl/server.crt -days 365 \
 - 🔒 All data encrypted in transit with TLS
 
 **HTTPS Endpoints:**
+
 - `https://127.0.0.1:3443/mcp` (Streamable HTTPS)
 - `https://127.0.0.1:3443/sse` (Legacy SSE HTTPS)
 - `https://127.0.0.1:3443/health` (Health check HTTPS)
@@ -116,12 +120,14 @@ ALLOWED_ORIGINS="http://127.0.0.1:3231,http://localhost:3231,http://127.0.0.1:30
 ```
 
 **Default Allowed Origins:**
+
 - `http://127.0.0.1:3231` (MCP Inspector)
 - `http://localhost:3231` (n8n, web clients)
 - `http://127.0.0.1:3000` (Legacy SSE port)
 - `http://localhost:3000` (Legacy SSE port)
 
 **Behavior:**
+
 - ✅ Allows requests without Origin header (non-browser clients like n8n)
 - ✅ Validates Origin header when present
 - ❌ Blocks unauthorized origins with 403 Forbidden
@@ -138,6 +144,7 @@ RATE_LIMIT_WINDOW_MS=60000      # Window size in milliseconds (1 minute)
 ```
 
 **Default Configuration:**
+
 - **100 requests per minute** per IP address
 - Returns `429 Too Many Requests` when exceeded
 - Includes standard rate limit headers
@@ -151,6 +158,7 @@ ENABLE_CORS=true
 ```
 
 **CORS Settings:**
+
 - **Origins:** Uses `ALLOWED_ORIGINS` configuration
 - **Methods:** `GET`, `POST`, `DELETE`, `OPTIONS`
 - **Headers:** `Content-Type`, `mcp-session-id`, `Authorization`
@@ -161,6 +169,7 @@ ENABLE_CORS=true
 Adds security-related HTTP headers when `ENABLE_SECURITY_FEATURES=true`.
 
 **Headers Added:**
+
 - `X-Content-Type-Options: nosniff`
 - `X-Frame-Options: DENY`
 - `X-XSS-Protection: 1; mode=block`
@@ -176,6 +185,7 @@ MAX_REQUEST_SIZE=10mb           # Default: 10MB
 ```
 
 **Limits:**
+
 - **Configurable limit:** Via `MAX_REQUEST_SIZE` (default: 10MB)
 - **Hard limit:** 50MB (cannot be exceeded)
 - **Error response:** `413 Request Entity Too Large`
@@ -191,6 +201,7 @@ curl http://127.0.0.1:3231/health
 ```
 
 **Response:**
+
 ```json
 {
   "status": "healthy",
@@ -208,6 +219,7 @@ curl http://127.0.0.1:3231/health
 ### Security Logging
 
 When security features are enabled, the server logs:
+
 - ✅ Successful origin validations
 - ❌ Blocked unauthorized origins
 - ⚠️ Rate limit violations
@@ -215,6 +227,7 @@ When security features are enabled, the server logs:
 - 🔍 Session management events
 
 **Log Levels:**
+
 - `DEBUG`: Detailed security events
 - `INFO`: Normal security operations
 - `WARN`: Security violations and blocks
@@ -235,6 +248,7 @@ All security features are **opt-in** and **disabled by default**:
 ### Client Compatibility
 
 **Tested with:**
+
 - ✅ Claude Desktop (STDIO transport)
 - ✅ n8n MCP AI Tool (HTTP/SSE transport)
 - ✅ MCP Inspector (HTTP Streamable transport)
@@ -250,12 +264,14 @@ All security features are **opt-in** and **disabled by default**:
 ## 🚨 Security Best Practices
 
 ### For Development
+
 ```bash
 # Minimal security for local development
 ENABLE_SECURITY_FEATURES=true
 ```
 
 ### For Production
+
 ```bash
 # Full security for production deployment
 ENABLE_SECURITY_FEATURES=true
@@ -265,6 +281,7 @@ ENABLE_CORS=true
 ```
 
 ### For High-Security Environments
+
 ```bash
 # Maximum security configuration
 ENABLE_SECURITY_FEATURES=true
@@ -282,20 +299,24 @@ ALLOWED_ORIGINS="http://127.0.0.1:3231"  # Restrict to specific origins
 ### Common Issues
 
 **403 Forbidden Errors:**
+
 - Check `ALLOWED_ORIGINS` includes your client's origin
 - Verify `ENABLE_ORIGIN_VALIDATION` is appropriate for your setup
 
 **429 Rate Limit Errors:**
+
 - Increase `RATE_LIMIT_MAX` if needed
 - Check if client is making excessive requests
 
 **CORS Errors:**
+
 - Enable `ENABLE_CORS=true`
 - Verify origin is in `ALLOWED_ORIGINS`
 
 ### Debug Mode
 
 Enable detailed security logging:
+
 ```bash
 LOG_LEVEL=debug
 ```

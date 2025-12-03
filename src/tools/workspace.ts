@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * ClickUp MCP Workspace Tools
  * 
  * This module defines workspace-related tools like retrieving workspace hierarchy.
@@ -39,10 +36,10 @@ export async function handleGetWorkspaceHierarchy() {
   try {
     // Get workspace hierarchy from the workspace service
     const hierarchy = await workspaceService.getWorkspaceHierarchy();
-    
+
     // Generate tree representation
     const treeOutput = formatTreeOutput(hierarchy);
-    
+
     // Use sponsor service to create the response with optional sponsor message
     return sponsorService.createResponse({ hierarchy: treeOutput }, true);
   } catch (error: any) {
@@ -57,17 +54,17 @@ function formatTreeOutput(hierarchy: WorkspaceTree): string {
   // Helper function to format a node and its children as a tree
   const formatNodeAsTree = (node: WorkspaceNode | WorkspaceTree['root'], level: number = 0, isLast: boolean = true, parentPrefix: string = ''): string[] => {
     const lines: string[] = [];
-    
+
     // Calculate the current line's prefix
     const currentPrefix = level === 0 ? '' : parentPrefix + (isLast ? '└── ' : '├── ');
-    
+
     // Format current node with descriptive ID type
     const idType = 'type' in node ? `${node.type.charAt(0).toUpperCase() + node.type.slice(1)} ID` : 'Workspace ID';
     lines.push(`${currentPrefix}${node.name} (${idType}: ${node.id})`);
-    
+
     // Calculate the prefix for children
     const childPrefix = level === 0 ? '' : parentPrefix + (isLast ? '    ' : '│   ');
-    
+
     // Process children
     const children = node.children || [];
     children.forEach((child, index) => {
@@ -79,13 +76,13 @@ function formatTreeOutput(hierarchy: WorkspaceTree): string {
       );
       lines.push(...childLines);
     });
-    
+
     return lines;
   };
 
   // Generate tree representation
   const treeLines = formatNodeAsTree(hierarchy.root);
-  
+
   // Return plain text instead of adding code block markers
   return treeLines.join('\n');
 } 

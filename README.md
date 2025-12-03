@@ -1,9 +1,3 @@
-<img src="assets/images/clickup_mcp_server_social_image.png" alt="ClickUp MCP Server" width="100%">
-
-![Total Supporters](https://img.shields.io/badge/🏆%20Total%20Supporters-7-gold)
-[![GitHub Stars](https://img.shields.io/github/stars/TaazKareem/clickup-mcp-server?style=flat&logo=github)](https://github.com/TaazKareem/clickup-mcp-server/stargazers)
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-no-grey.svg)](https://github.com/TaazKareem/clickup-mcp-server/graphs/commit-activity)
-
 A Model Context Protocol (MCP) server for integrating ClickUp tasks with AI applications. This server allows AI agents to interact with ClickUp tasks, spaces, lists, and folders through a standardized protocol.
 
 > 🚧 **Status Update:** The Official ClickUp MCP Server, forked from this repo is released. https://help.clickup.com/hc/en-us/articles/33335772678423-What-is-ClickUp-MCP
@@ -22,18 +16,6 @@ See [SETUP.md](SETUP.md) for complete setup instructions covering:
 - **Docker Setup** (for containerized deployments)
 
 Quick start: Get your ClickUp API key from [ClickUp Settings](https://app.clickup.com/settings/apps) and Team ID from your workspace URL, then follow the setup guide.
-
-## Smithery Installation (Quick Start)
-
-[![smithery badge](https://smithery.ai/badge/@taazkareem/clickup-mcp-server)](https://smithery.ai/server/@TaazKareem/clickup-mcp-server)
-
-The server is hosted on [Smithery](https://smithery.ai/server/@taazkareem/clickup-mcp-server). There, you can preview the available tools or copy the commands to run on your specific client app.
-
-## NPX Installation
-
-[![NPM Version](https://img.shields.io/npm/v/@taazkareem/clickup-mcp-server.svg?style=flat&logo=npm)](https://www.npmjs.com/package/@taazkareem/clickup-mcp-server)
-[![Dependency Status](https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen)](https://github.com/TaazKareem/clickup-mcp-server/blob/main/package.json)
-[![NPM Downloads](https://img.shields.io/npm/dm/@taazkareem/clickup-mcp-server.svg?style=flat&logo=npm)](https://npmcharts.com/compare/@taazkareem/clickup-mcp-server?minimal=true)
 
 Add this entry to your client's MCP settings JSON file:
 
@@ -325,16 +307,9 @@ The server provides clear error messages for:
 The `LOG_LEVEL` environment variable can be specified to control the verbosity of server logs. Valid values are `trace`, `debug`, `info`, `warn`, and `error` (default).
 This can be also be specified on the command line as, e.g. `--env LOG_LEVEL=info`.
 
-## Support the Developer
+## Support the Project
 
-When using this server, you may occasionally see a small sponsor message with a link to this repository included in tool responses. I hope you can support the project!
-If you find this project useful, please consider supporting:
-
-[![Sponsor TaazKareem](https://img.shields.io/badge/Sponsor-TaazKareem-orange?logo=github)](https://github.com/sponsors/TaazKareem)
-
-<a href="https://buymeacoffee.com/taazkareem">
-  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" width="200" alt="Buy Me A Coffee">
-</a>
+When using this server, you may occasionally see a small sponsor message with a link to this repository included in tool responses. We hope you can support the project!
 
 ## Acknowledgements
 

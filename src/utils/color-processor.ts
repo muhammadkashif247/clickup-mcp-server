@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * Color Processor Utility
  * 
  * Processes natural language color commands and converts them to HEX color values.
@@ -14,20 +11,20 @@ const COLOR_MAP: Record<string, string> = {
   red: '#FF0000',
   green: '#00FF00',
   blue: '#0000FF',
-  
+
   // Secondary colors
   yellow: '#FFFF00',
   purple: '#800080',
   orange: '#FFA500',
   pink: '#FFC0CB',
   brown: '#A52A2A',
-  
+
   // Neutrals
   black: '#000000',
   white: '#FFFFFF',
   gray: '#808080',
   grey: '#808080',
-  
+
   // Extended colors
   navy: '#000080',
   teal: '#008080',
@@ -94,10 +91,10 @@ const COLOR_VARIATIONS: Record<string, Record<string, string>> = {
  */
 function extractColorFromText(text: string): string | null {
   if (!text) return null;
-  
+
   // Convert to lowercase for case-insensitive matching
   const lowercaseText = text.toLowerCase();
-  
+
   // First check for color variations (e.g., "dark blue", "light green")
   for (const [baseColor, variations] of Object.entries(COLOR_VARIATIONS)) {
     for (const [variation, _] of Object.entries(variations)) {
@@ -107,7 +104,7 @@ function extractColorFromText(text: string): string | null {
       }
     }
   }
-  
+
   // Then check for base colors
   for (const color of Object.keys(COLOR_MAP)) {
     // Use word boundary to make sure we're matching whole words
@@ -116,7 +113,7 @@ function extractColorFromText(text: string): string | null {
       return color;
     }
   }
-  
+
   return null;
 }
 
@@ -127,20 +124,20 @@ function extractColorFromText(text: string): string | null {
  */
 function colorNameToHex(colorName: string): string | null {
   if (!colorName) return null;
-  
+
   const lowercaseColor = colorName.toLowerCase();
-  
+
   // Check if it's a color variation (e.g., "dark blue")
   const parts = lowercaseColor.split(' ');
   if (parts.length === 2) {
     const variation = parts[0];
     const baseColor = parts[1];
-    
+
     if (COLOR_VARIATIONS[baseColor] && COLOR_VARIATIONS[baseColor][variation]) {
       return COLOR_VARIATIONS[baseColor][variation];
     }
   }
-  
+
   // Check if it's a base color
   return COLOR_MAP[lowercaseColor] || null;
 }
@@ -153,17 +150,17 @@ function colorNameToHex(colorName: string): string | null {
 function calculateLuminance(hex: string): number {
   // Remove # if present
   const color = hex.startsWith('#') ? hex.slice(1) : hex;
-  
+
   // Convert HEX to RGB
   const r = parseInt(color.substr(0, 2), 16) / 255;
   const g = parseInt(color.substr(2, 2), 16) / 255;
   const b = parseInt(color.substr(4, 2), 16) / 255;
-  
+
   // Calculate luminance using the formula from WCAG 2.0
   const R = r <= 0.03928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4);
   const G = g <= 0.03928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, 2.4);
   const B = b <= 0.03928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, 2.4);
-  
+
   return 0.2126 * R + 0.7152 * G + 0.0722 * B;
 }
 
@@ -174,7 +171,7 @@ function calculateLuminance(hex: string): number {
  */
 function generateContrastingForeground(backgroundColor: string): string {
   const luminance = calculateLuminance(backgroundColor);
-  
+
   // Use white text on dark backgrounds and black text on light backgrounds
   // The threshold 0.5 is based on WCAG guidelines for contrast
   return luminance > 0.5 ? '#000000' : '#FFFFFF';
@@ -189,14 +186,14 @@ export function processColorCommand(command: string): { background: string; fore
   // Extract color name from command
   const colorName = extractColorFromText(command);
   if (!colorName) return null;
-  
+
   // Convert color name to HEX background color
   const backgroundColor = colorNameToHex(colorName);
   if (!backgroundColor) return null;
-  
+
   // Generate appropriate foreground color
   const foregroundColor = generateContrastingForeground(backgroundColor);
-  
+
   return {
     background: backgroundColor,
     foreground: foregroundColor

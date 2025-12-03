@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * MCP Server for ClickUp integration
  */
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";

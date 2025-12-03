@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * Security Middleware for ClickUp MCP Server
  * 
  * This module provides optional security enhancements that can be enabled
@@ -147,7 +144,7 @@ export function createCorsMiddleware() {
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps, Postman, etc.)
       if (!origin) return callback(null, true);
-      
+
       if (config.allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
@@ -177,7 +174,7 @@ export function createSecurityHeadersMiddleware() {
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('X-XSS-Protection', '1; mode=block');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-    
+
     // Only add HSTS for HTTPS
     if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
       res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
@@ -198,7 +195,7 @@ export function createSecurityLoggingMiddleware() {
     }
 
     const startTime = Date.now();
-    
+
     res.on('finish', () => {
       const duration = Date.now() - startTime;
       const logData = {

@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 João Santana <joaosantana@gmail.com>
- * SPDX-License-Identifier: MIT
- *
  * ClickUp MCP Document Tools
  * 
  * This module defines document-related tools including creating,
@@ -304,7 +301,7 @@ export async function handleCreateDocument(parameters: any) {
   try {
     // Create the document
     const newDocument = await clickUpServices.document.createDocument(documentData);
-    
+
     return sponsorService.createResponse({
       id: newDocument.id,
       name: newDocument.name,
@@ -340,7 +337,7 @@ export async function handleGetDocument(parameters: any) {
   try {
     // Get the document
     const document = await documentService.getDocument(targetDocumentId);
-    
+
     return sponsorService.createResponse({
       id: document.id,
       name: document.name,
@@ -361,7 +358,7 @@ export async function handleGetDocument(parameters: any) {
  * Handler for the list_documents tool
  */
 export async function handleListDocuments(parameters: any) {
-  const { 
+  const {
     id,
     creator,
     deleted,
@@ -375,7 +372,7 @@ export async function handleListDocuments(parameters: any) {
   try {
     // Prepare options object with all possible parameters
     const options: any = {};
-    
+
     // Add each parameter to options only if it's defined
     if (id !== undefined) options.id = id;
     if (creator !== undefined) options.creator = creator;
@@ -387,7 +384,7 @@ export async function handleListDocuments(parameters: any) {
     if (next_cursor !== undefined) options.next_cursor = next_cursor;
 
     const response = await documentService.listDocuments(options);
-    
+
     // Ensure we have a valid response
     if (!response || !response.docs) {
       return sponsorService.createResponse({
@@ -425,7 +422,7 @@ export async function handleListDocuments(parameters: any) {
  */
 export async function handleListDocumentPages(params: any) {
   logger.info('Listing document pages', { params });
-  
+
   try {
     const { documentId, max_page_depth = -1 } = params;
     const pages = await documentService.listDocumentPages(documentId, { max_page_depth });
@@ -452,7 +449,7 @@ export async function handleGetDocumentPages(params: any) {
 
   try {
     const options: Partial<DocumentPagesOptions> = {};
-    
+
     // Adiciona content_format nas options se fornecido
     if (content_format) {
       options.content_format = content_format;

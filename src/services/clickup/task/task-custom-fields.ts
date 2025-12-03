@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * ClickUp Task Service - Custom Fields Module
  *
  * Handles custom fields operations for ClickUp tasks, including:
@@ -30,7 +27,7 @@ export interface CustomFieldValue {
  * It uses composition to access core functionality instead of inheritance.
  */
 export class TaskServiceCustomFields {
-  constructor(private core: TaskServiceCore) {}
+  constructor(private core: TaskServiceCore) { }
   /**
    * Set a single custom field value on a task
    *

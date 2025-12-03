@@ -6,11 +6,11 @@ The Server-Sent Events (SSE) transport for the ClickUp MCP Server enables integr
 
 ## Configuration Options
 
-| Option | Description | Default |
-| ------ | ----------- | ------- |
-| `ENABLE_SSE` | Enable the SSE transport | `false` |
-| `SSE_PORT` | Port for the SSE server | `3000` |
-| `ENABLE_STDIO` | Enable the STDIO transport | `true` |
+| Option         | Description                | Default |
+| -------------- | -------------------------- | ------- |
+| `ENABLE_SSE`   | Enable the SSE transport   | `false` |
+| `SSE_PORT`     | Port for the SSE server    | `3000`  |
+| `ENABLE_STDIO` | Enable the STDIO transport | `true`  |
 
 ## Enabling SSE Transport
 
@@ -39,10 +39,7 @@ If you're using the server through an MCP configuration file (e.g., in Claude De
   "mcpServers": {
     "ClickUp": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@taazkareem/clickup-mcp-server@latest"
-      ],
+      "args": ["-y", "@taazkareem/clickup-mcp-server@latest"],
       "env": {
         "CLICKUP_API_KEY": "your-api-key",
         "CLICKUP_TEAM_ID": "your-team-id",
@@ -59,11 +56,11 @@ If you're using the server through an MCP configuration file (e.g., in Claude De
 
 When SSE is enabled, the server exposes the following endpoints:
 
-| Endpoint | Method | Description |
-| -------- | ------ | ----------- |
-| `/events` | GET | SSE connection endpoint for receiving server events |
-| `/request` | POST | Endpoint for sending requests to the server |
-| `/health` | GET | Health check endpoint |
+| Endpoint   | Method | Description                                         |
+| ---------- | ------ | --------------------------------------------------- |
+| `/events`  | GET    | SSE connection endpoint for receiving server events |
+| `/request` | POST   | Endpoint for sending requests to the server         |
+| `/health`  | GET    | Health check endpoint                               |
 
 ## n8n Integration
 
@@ -86,4 +83,4 @@ The SSE transport implements the ServerTransport interface and provides the foll
 - Sends responses back through SSE events
 - Manages connection lifecycle and cleanup
 
-This implementation allows the server to be used with SSE-capable clients while maintaining compatibility with the default STDIO transport. 
+This implementation allows the server to be used with SSE-capable clients while maintaining compatibility with the default STDIO transport.

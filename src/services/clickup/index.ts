@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * ClickUp Service Entry Point
  * 
  * This file re-exports all service modules for the ClickUp API integration.
@@ -72,9 +69,9 @@ export function createClickUpServices(config: ClickUpServiceConfig): ClickUpServ
   const { apiKey, teamId, baseUrl } = config;
 
   // Log start of overall initialization
-  logger.info('Starting ClickUp services initialization', { 
-    teamId, 
-    baseUrl: baseUrl || 'https://api.clickup.com/api/v2' 
+  logger.info('Starting ClickUp services initialization', {
+    teamId,
+    baseUrl: baseUrl || 'https://api.clickup.com/api/v2'
   });
 
   // Create workspace service first since others depend on it
@@ -84,10 +81,10 @@ export function createClickUpServices(config: ClickUpServiceConfig): ClickUpServ
   // Initialize remaining services with workspace dependency
   logger.info('Initializing ClickUp Task service');
   const taskService = new TaskService(apiKey, teamId, baseUrl, workspaceService);
-  
+
   logger.info('Initializing ClickUp List service');
   const listService = new ListService(apiKey, teamId, baseUrl, workspaceService);
-  
+
   logger.info('Initializing ClickUp Folder service');
   const folderService = new FolderService(apiKey, teamId, baseUrl, workspaceService);
 
@@ -115,6 +112,6 @@ export function createClickUpServices(config: ClickUpServiceConfig): ClickUpServ
     services: Object.keys(services),
     baseUrl: baseUrl || 'https://api.clickup.com/api/v2'
   });
-  
+
   return services;
 }

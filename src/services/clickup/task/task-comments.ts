@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * ClickUp Task Service - Comments Module
  *
  * Handles comment operations for ClickUp tasks, including:
@@ -22,7 +19,7 @@ import { ClickUpComment } from '../types.js';
  * It uses composition to access core functionality instead of inheritance.
  */
 export class TaskServiceComments {
-  constructor(private core: TaskServiceCore) {}
+  constructor(private core: TaskServiceCore) { }
   /**
    * Get all comments for a task
    * 
@@ -93,7 +90,7 @@ export class TaskServiceComments {
         `/task/${taskId}/comment`,
         payload
       );
-      
+
       // Handle different response formats from ClickUp API
       if (response.data) {
         if (response.data.comment) {
@@ -114,7 +111,7 @@ export class TaskServiceComments {
           } as ClickUpComment;
         }
       }
-      
+
       throw new Error('Invalid response from ClickUp API');
     } catch (error: any) {
       // Check if comment might have been created despite error
@@ -123,13 +120,13 @@ export class TaskServiceComments {
         return {
           id: `fallback-${Date.now()}`,
           comment: commentText,
-          comment_text: commentText, 
+          comment_text: commentText,
           user: { id: 0, username: 'Unknown', email: '', color: '' },
           date: new Date().toISOString(),
           resolved: false
         } as ClickUpComment;
       }
-      
+
       throw (this.core as any).handleError(error, 'Failed to create task comment');
     }
   }

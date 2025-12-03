@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * ClickUp Task Service - Core Module
  * 
  * Handles core operations related to tasks in ClickUp, including:
@@ -11,11 +8,11 @@
  */
 
 import { BaseClickUpService, ErrorCode, ClickUpServiceError, ServiceResponse } from '../base.js';
-import { 
-  ClickUpTask, 
-  CreateTaskData, 
-  UpdateTaskData, 
-  TaskFilters, 
+import {
+  ClickUpTask,
+  CreateTaskData,
+  UpdateTaskData,
+  TaskFilters,
   TasksResponse,
   TaskPriority
 } from '../types.js';
@@ -28,7 +25,7 @@ import { WorkspaceService } from '../workspace.js';
 export class TaskServiceCore extends BaseClickUpService {
   protected listService: ListService;
   protected workspaceService: WorkspaceService | null = null;
-  
+
   // Cache for validated tasks and lists
   private validationCache = {
     tasks: new Map<string, {
@@ -47,26 +44,26 @@ export class TaskServiceCore extends BaseClickUpService {
     validatedAt: number;
     listId?: string; // Optional list context for disambiguation
   }>();
-  
+
   // Cache TTL in milliseconds (5 minutes)
   private readonly CACHE_TTL = 5 * 60 * 1000;
 
   constructor(
-    apiKey: string, 
-    teamId: string, 
+    apiKey: string,
+    teamId: string,
     baseUrl?: string,
     workspaceService?: WorkspaceService
   ) {
     super(apiKey, teamId, baseUrl);
-    
+
     if (workspaceService) {
       this.workspaceService = workspaceService;
       this.logOperation('constructor', { usingSharedWorkspaceService: true });
     }
-    
+
     // Initialize list service for list lookups
     this.listService = new ListService(apiKey, teamId, baseUrl, this.workspaceService);
-    
+
     this.logOperation('constructor', { initialized: true });
   }
 
@@ -80,7 +77,7 @@ export class TaskServiceCore extends BaseClickUpService {
     if (error instanceof ClickUpServiceError) {
       return error;
     }
-    
+
     return new ClickUpServiceError(
       message || `Task service error: ${error.message}`,
       ErrorCode.UNKNOWN,
@@ -95,7 +92,7 @@ export class TaskServiceCore extends BaseClickUpService {
    */
   protected buildTaskFilterParams(filters: TaskFilters): URLSearchParams {
     const params = new URLSearchParams();
-    
+
     // Add all filters to the query parameters
     if (filters.include_closed) params.append('include_closed', String(filters.include_closed));
     if (filters.subtasks) params.append('subtasks', String(filters.subtasks));
@@ -103,7 +100,7 @@ export class TaskServiceCore extends BaseClickUpService {
     if (filters.page) params.append('page', String(filters.page));
     if (filters.order_by) params.append('order_by', filters.order_by);
     if (filters.reverse) params.append('reverse', String(filters.reverse));
-    
+
     // Array parameters
     if (filters.statuses && filters.statuses.length > 0) {
       filters.statuses.forEach(status => params.append('statuses[]', status));
@@ -111,7 +108,7 @@ export class TaskServiceCore extends BaseClickUpService {
     if (filters.assignees && filters.assignees.length > 0) {
       filters.assignees.forEach(assignee => params.append('assignees[]', assignee));
     }
-    
+
     // Team tasks endpoint specific parameters
     if (filters.tags && filters.tags.length > 0) {
       filters.tags.forEach(tag => params.append('tags[]', tag));
@@ -129,7 +126,7 @@ export class TaskServiceCore extends BaseClickUpService {
     if (filters.include_closed_lists !== undefined) params.append('include_closed_lists', String(filters.include_closed_lists));
     if (filters.include_archived_lists !== undefined) params.append('include_archived_lists', String(filters.include_archived_lists));
     if (filters.include_compact_time_entries !== undefined) params.append('include_compact_time_entries', String(filters.include_compact_time_entries));
-    
+
     // Date filters
     if (filters.due_date_gt) params.append('due_date_gt', String(filters.due_date_gt));
     if (filters.due_date_lt) params.append('due_date_lt', String(filters.due_date_lt));
@@ -137,17 +134,17 @@ export class TaskServiceCore extends BaseClickUpService {
     if (filters.date_created_lt) params.append('date_created_lt', String(filters.date_created_lt));
     if (filters.date_updated_gt) params.append('date_updated_gt', String(filters.date_updated_gt));
     if (filters.date_updated_lt) params.append('date_updated_lt', String(filters.date_updated_lt));
-    
+
     // Handle custom fields if present
     if (filters.custom_fields) {
       Object.entries(filters.custom_fields).forEach(([key, value]) => {
         params.append(`custom_fields[${key}]`, String(value));
       });
     }
-    
+
     return params;
   }
-  
+
   /**
    * Extract priority value from a task
    * @param task The task to extract priority from
@@ -157,16 +154,16 @@ export class TaskServiceCore extends BaseClickUpService {
     if (!task.priority || !task.priority.id) {
       return null;
     }
-    
+
     const priorityValue = parseInt(task.priority.id);
     // Ensure it's in the valid range 1-4
     if (isNaN(priorityValue) || priorityValue < 1 || priorityValue > 4) {
       return null;
     }
-    
+
     return priorityValue as TaskPriority;
   }
-  
+
   /**
    * Extract task data for creation/duplication
    * @param task The source task
@@ -192,14 +189,14 @@ export class TaskServiceCore extends BaseClickUpService {
    */
   async createTask(listId: string, taskData: CreateTaskData): Promise<ClickUpTask> {
     this.logOperation('createTask', { listId, ...taskData });
-    
+
     try {
       return await this.makeRequest(async () => {
         const response = await this.client.post<ClickUpTask | string>(
           `/list/${listId}/task`,
           taskData
         );
-        
+
         // Handle both JSON and text responses
         const data = response.data;
         if (typeof data === 'string') {
@@ -215,7 +212,7 @@ export class TaskServiceCore extends BaseClickUpService {
             data
           );
         }
-        
+
         return data;
       });
     } catch (error) {
@@ -294,7 +291,7 @@ export class TaskServiceCore extends BaseClickUpService {
    */
   async getTasks(listId: string, filters: TaskFilters = {}): Promise<ClickUpTask[]> {
     this.logOperation('getTasks', { listId, filters });
-    
+
     try {
       return await this.makeRequest(async () => {
         const params = this.buildTaskFilterParams(filters);
@@ -302,7 +299,7 @@ export class TaskServiceCore extends BaseClickUpService {
           `/list/${listId}/task`,
           { params }
         );
-        
+
         // Handle both JSON and text responses
         const data = response.data;
         if (typeof data === 'string') {
@@ -312,7 +309,7 @@ export class TaskServiceCore extends BaseClickUpService {
             data
           );
         }
-        
+
         return Array.isArray(data) ? data : data.tasks || [];
       });
     } catch (error) {
@@ -461,7 +458,7 @@ export class TaskServiceCore extends BaseClickUpService {
           `/task/${taskId}`,
           fieldsToSend
         );
-        
+
         // Handle both JSON and text responses
         const data = response.data;
         if (typeof data === 'string') {
@@ -477,20 +474,20 @@ export class TaskServiceCore extends BaseClickUpService {
             data
           );
         }
-        
+
         return data;
       });
-      
+
       // Then update custom fields if provided
       if (custom_fields && Array.isArray(custom_fields) && custom_fields.length > 0) {
         // Use the setCustomFieldValues method from the inherited class
         // This will be available in TaskServiceCustomFields which extends this class
         await (this as any).setCustomFieldValues(taskId, custom_fields);
-        
+
         // Fetch the task again to get the updated version with custom fields
         return await this.getTask(taskId);
       }
-      
+
       return updatedTask;
     } catch (error) {
       throw this.handleError(error, `Failed to update task ${taskId}`);
@@ -504,12 +501,12 @@ export class TaskServiceCore extends BaseClickUpService {
    */
   async deleteTask(taskId: string): Promise<ServiceResponse<void>> {
     this.logOperation('deleteTask', { taskId });
-    
+
     try {
       await this.makeRequest(async () => {
         await this.client.delete(`/task/${taskId}`);
       });
-      
+
       return {
         success: true,
         data: undefined,
@@ -529,7 +526,7 @@ export class TaskServiceCore extends BaseClickUpService {
   async moveTask(taskId: string, destinationListId: string): Promise<ClickUpTask> {
     const startTime = Date.now();
     this.logOperation('moveTask', { taskId, destinationListId, operation: 'start' });
-    
+
     try {
       // First, get task and validate destination list
       const [sourceTask, _] = await Promise.all([
@@ -539,13 +536,13 @@ export class TaskServiceCore extends BaseClickUpService {
 
       // Extract task data for creating the new task
       const taskData = this.extractTaskData(sourceTask);
-      
+
       // Create the task in the new list
       const newTask = await this.createTask(destinationListId, taskData);
-      
+
       // Delete the original task
       await this.deleteTask(taskId);
-      
+
       // Update the cache
       this.validationCache.tasks.delete(taskId);
       this.validationCache.tasks.set(newTask.id, {
@@ -554,9 +551,9 @@ export class TaskServiceCore extends BaseClickUpService {
       });
 
       const totalTime = Date.now() - startTime;
-      this.logOperation('moveTask', { 
-        taskId, 
-        destinationListId, 
+      this.logOperation('moveTask', {
+        taskId,
+        destinationListId,
         operation: 'complete',
         timing: { totalTime },
         newTaskId: newTask.id
@@ -565,9 +562,9 @@ export class TaskServiceCore extends BaseClickUpService {
       return newTask;
     } catch (error) {
       // Log failure
-      this.logOperation('moveTask', { 
-        taskId, 
-        destinationListId, 
+      this.logOperation('moveTask', {
+        taskId,
+        destinationListId,
         operation: 'failed',
         error: error instanceof Error ? error.message : String(error),
         timing: { totalTime: Date.now() - startTime }
@@ -584,7 +581,7 @@ export class TaskServiceCore extends BaseClickUpService {
    */
   async duplicateTask(taskId: string, listId?: string): Promise<ClickUpTask> {
     this.logOperation('duplicateTask', { taskId, listId });
-    
+
     try {
       // Get source task and validate destination list if provided
       const [sourceTask, _] = await Promise.all([
@@ -595,7 +592,7 @@ export class TaskServiceCore extends BaseClickUpService {
       // Create duplicate in specified list or original list
       const targetListId = listId || sourceTask.list.id;
       const taskData = this.extractTaskData(sourceTask);
-      
+
       return await this.createTask(targetListId, taskData);
     } catch (error) {
       throw this.handleError(error, `Failed to duplicate task ${taskId}`);
@@ -617,7 +614,7 @@ export class TaskServiceCore extends BaseClickUpService {
 
     // Not in cache or expired, fetch task
     const task = await this.getTask(taskId);
-    
+
     // Cache the validation result
     this.validationCache.tasks.set(taskId, {
       validatedAt: Date.now(),
@@ -690,7 +687,7 @@ export class TaskServiceCore extends BaseClickUpService {
 
     try {
       await this.listService.getList(listId);
-      
+
       // Cache the successful validation
       this.validationCache.lists.set(listId, {
         validatedAt: Date.now(),

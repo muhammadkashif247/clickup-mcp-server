@@ -1,15 +1,12 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * ClickUp MCP Folder Tools
  * 
  * This module defines folder-related tools for creating, retrieving,
  * updating, and deleting folders in the ClickUp workspace hierarchy.
  */
 
-import { 
-  CreateFolderData, 
+import {
+  CreateFolderData,
   ClickUpFolder
 } from '../services/clickup/types.js';
 import { clickUpServices } from '../services/shared.js';
@@ -153,14 +150,14 @@ export const deleteFolderTool = {
  */
 export async function handleCreateFolder(parameters: any) {
   const { name, spaceId, spaceName, override_statuses } = parameters;
-  
+
   // Validate required fields
   if (!name) {
     throw new Error("Folder name is required");
   }
-  
+
   let targetSpaceId = spaceId;
-  
+
   // If no spaceId but spaceName is provided, look up the space ID
   if (!targetSpaceId && spaceName) {
     const spaceIdResult = await workspaceService.findSpaceByName(spaceName);
@@ -169,7 +166,7 @@ export async function handleCreateFolder(parameters: any) {
     }
     targetSpaceId = spaceIdResult.id;
   }
-  
+
   if (!targetSpaceId) {
     throw new Error("Either spaceId or spaceName must be provided");
   }
@@ -185,7 +182,7 @@ export async function handleCreateFolder(parameters: any) {
   try {
     // Create the folder
     const newFolder = await folderService.createFolder(targetSpaceId, folderData);
-    
+
     return sponsorService.createResponse({
       id: newFolder.id,
       name: newFolder.name,
@@ -206,13 +203,13 @@ export async function handleCreateFolder(parameters: any) {
  */
 export async function handleGetFolder(parameters: any) {
   const { folderId, folderName, spaceId, spaceName } = parameters;
-  
+
   let targetFolderId = folderId;
-  
+
   // If no folderId provided but folderName is, look up the folder ID
   if (!targetFolderId && folderName) {
     let targetSpaceId = spaceId;
-    
+
     // If no spaceId provided but spaceName is, look up the space ID first
     if (!targetSpaceId && spaceName) {
       const spaceIdResult = await workspaceService.findSpaceByName(spaceName);
@@ -221,18 +218,18 @@ export async function handleGetFolder(parameters: any) {
       }
       targetSpaceId = spaceIdResult.id;
     }
-    
+
     if (!targetSpaceId) {
       throw new Error("Either spaceId or spaceName must be provided when using folderName");
     }
-    
+
     const folderResult = await folderService.findFolderByName(targetSpaceId, folderName);
     if (!folderResult) {
       throw new Error(`Folder "${folderName}" not found in space`);
     }
     targetFolderId = folderResult.id;
   }
-  
+
   if (!targetFolderId) {
     throw new Error("Either folderId or folderName must be provided");
   }
@@ -240,7 +237,7 @@ export async function handleGetFolder(parameters: any) {
   try {
     // Get the folder
     const folder = await folderService.getFolder(targetFolderId);
-    
+
     return sponsorService.createResponse({
       id: folder.id,
       name: folder.name,
@@ -260,13 +257,13 @@ export async function handleGetFolder(parameters: any) {
  */
 export async function handleUpdateFolder(parameters: any) {
   const { folderId, folderName, name, override_statuses, spaceId, spaceName } = parameters;
-  
+
   let targetFolderId = folderId;
-  
+
   // If no folderId provided but folderName is, look up the folder ID
   if (!targetFolderId && folderName) {
     let targetSpaceId = spaceId;
-    
+
     // If no spaceId provided but spaceName is, look up the space ID first
     if (!targetSpaceId && spaceName) {
       const spaceIdResult = await workspaceService.findSpaceByName(spaceName);
@@ -275,22 +272,22 @@ export async function handleUpdateFolder(parameters: any) {
       }
       targetSpaceId = spaceIdResult.id;
     }
-    
+
     if (!targetSpaceId) {
       throw new Error("Either spaceId or spaceName must be provided when using folderName");
     }
-    
+
     const folderResult = await folderService.findFolderByName(targetSpaceId, folderName);
     if (!folderResult) {
       throw new Error(`Folder "${folderName}" not found in space`);
     }
     targetFolderId = folderResult.id;
   }
-  
+
   if (!targetFolderId) {
     throw new Error("Either folderId or folderName must be provided");
   }
-  
+
   // Ensure at least one update field is provided
   if (!name && override_statuses === undefined) {
     throw new Error("At least one of name or override_statuses must be provided for update");
@@ -304,7 +301,7 @@ export async function handleUpdateFolder(parameters: any) {
   try {
     // Update the folder
     const updatedFolder = await folderService.updateFolder(targetFolderId, updateData);
-    
+
     return sponsorService.createResponse({
       id: updatedFolder.id,
       name: updatedFolder.name,
@@ -325,13 +322,13 @@ export async function handleUpdateFolder(parameters: any) {
  */
 export async function handleDeleteFolder(parameters: any) {
   const { folderId, folderName, spaceId, spaceName } = parameters;
-  
+
   let targetFolderId = folderId;
-  
+
   // If no folderId provided but folderName is, look up the folder ID
   if (!targetFolderId && folderName) {
     let targetSpaceId = spaceId;
-    
+
     // If no spaceId provided but spaceName is, look up the space ID first
     if (!targetSpaceId && spaceName) {
       const spaceIdResult = await workspaceService.findSpaceByName(spaceName);
@@ -340,18 +337,18 @@ export async function handleDeleteFolder(parameters: any) {
       }
       targetSpaceId = spaceIdResult.id;
     }
-    
+
     if (!targetSpaceId) {
       throw new Error("Either spaceId or spaceName must be provided when using folderName");
     }
-    
+
     const folderResult = await folderService.findFolderByName(targetSpaceId, folderName);
     if (!folderResult) {
       throw new Error(`Folder "${folderName}" not found in space`);
     }
     targetFolderId = folderResult.id;
   }
-  
+
   if (!targetFolderId) {
     throw new Error("Either folderId or folderName must be provided");
   }
@@ -360,10 +357,10 @@ export async function handleDeleteFolder(parameters: any) {
     // Get folder details before deletion for confirmation message
     const folder = await folderService.getFolder(targetFolderId);
     const folderName = folder.name;
-    
+
     // Delete the folder
     await folderService.deleteFolder(targetFolderId);
-    
+
     return sponsorService.createResponse({
       success: true,
       message: `Folder "${folderName || targetFolderId}" deleted successfully`

@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * Resolver Utility Functions
  * 
  * This module provides utilities for resolving entity IDs from names or other identifiers.
@@ -36,109 +33,109 @@ export function isNameMatch(actualName: string, searchName: string): NameMatchRe
   // Remove any extra whitespace
   const normalizedActualName = actualName.trim();
   const normalizedSearchName = searchName.trim();
-  
+
   // Handle empty names after normalization
   if (normalizedActualName === '') {
     return { isMatch: false, score: 0, exactMatch: false, reason: 'Actual name is empty' };
   }
-  
+
   if (normalizedSearchName === '') {
     return { isMatch: false, score: 0, exactMatch: false, reason: 'Search name is empty' };
   }
 
   // 1. Exact match (highest quality)
   if (normalizedActualName === normalizedSearchName) {
-    return { 
-      isMatch: true, 
-      score: 100, 
+    return {
+      isMatch: true,
+      score: 100,
       exactMatch: true,
-      reason: 'Exact match' 
+      reason: 'Exact match'
     };
   }
 
   // 2. Case-insensitive exact match (high quality)
   if (normalizedActualName.toLowerCase() === normalizedSearchName.toLowerCase()) {
-    return { 
-      isMatch: true, 
-      score: 90, 
+    return {
+      isMatch: true,
+      score: 90,
       exactMatch: true,
-      reason: 'Case-insensitive exact match' 
+      reason: 'Case-insensitive exact match'
     };
   }
 
   // 3. Match after removing emojis (moderate quality)
   const actualNameWithoutEmoji = normalizedActualName.replace(/[\p{Emoji}\u{FE00}-\u{FE0F}\u200d]+/gu, '').trim();
   const searchNameWithoutEmoji = normalizedSearchName.replace(/[\p{Emoji}\u{FE00}-\u{FE0F}\u200d]+/gu, '').trim();
-  
+
   if (actualNameWithoutEmoji === searchNameWithoutEmoji) {
-    return { 
-      isMatch: true, 
-      score: 80, 
+    return {
+      isMatch: true,
+      score: 80,
       exactMatch: false,
-      reason: 'Exact match after removing emojis' 
+      reason: 'Exact match after removing emojis'
     };
   }
-  
+
   if (actualNameWithoutEmoji.toLowerCase() === searchNameWithoutEmoji.toLowerCase()) {
-    return { 
-      isMatch: true, 
-      score: 70, 
+    return {
+      isMatch: true,
+      score: 70,
       exactMatch: false,
-      reason: 'Case-insensitive match after removing emojis' 
+      reason: 'Case-insensitive match after removing emojis'
     };
   }
 
   // 4. Substring matches (lower quality)
   const lowerActual = normalizedActualName.toLowerCase();
   const lowerSearch = normalizedSearchName.toLowerCase();
-  
+
   // Full substring (term completely contained)
   if (lowerActual.includes(lowerSearch)) {
-    return { 
-      isMatch: true, 
-      score: 60, 
+    return {
+      isMatch: true,
+      score: 60,
       exactMatch: false,
-      reason: 'Search term found as substring in actual name' 
+      reason: 'Search term found as substring in actual name'
     };
   }
-  
+
   if (lowerSearch.includes(lowerActual)) {
-    return { 
-      isMatch: true, 
-      score: 50, 
+    return {
+      isMatch: true,
+      score: 50,
       exactMatch: false,
-      reason: 'Actual name found as substring in search term' 
+      reason: 'Actual name found as substring in search term'
     };
   }
-  
+
   // 5. Fuzzy emoji-less matches (lowest quality)
   const lowerActualNoEmoji = actualNameWithoutEmoji.toLowerCase();
   const lowerSearchNoEmoji = searchNameWithoutEmoji.toLowerCase();
-  
+
   if (lowerActualNoEmoji.includes(lowerSearchNoEmoji)) {
-    return { 
-      isMatch: true, 
-      score: 40, 
+    return {
+      isMatch: true,
+      score: 40,
       exactMatch: false,
-      reason: 'Search term (without emoji) found as substring in actual name' 
+      reason: 'Search term (without emoji) found as substring in actual name'
     };
   }
-  
+
   if (lowerSearchNoEmoji.includes(lowerActualNoEmoji)) {
-    return { 
-      isMatch: true, 
-      score: 30, 
+    return {
+      isMatch: true,
+      score: 30,
       exactMatch: false,
-      reason: 'Actual name (without emoji) found as substring in search term' 
+      reason: 'Actual name (without emoji) found as substring in search term'
     };
   }
 
   // No match found
-  return { 
-    isMatch: false, 
-    score: 0, 
+  return {
+    isMatch: false,
+    score: 0,
     exactMatch: false,
-    reason: 'No match found with any matching strategy' 
+    reason: 'No match found with any matching strategy'
   };
 }
 
@@ -154,7 +151,7 @@ export async function resolveListId(
   if (listId) {
     return listId;
   }
-  
+
   // If list name is provided, find the corresponding ID
   if (listName) {
     const listInfo = await findListIDByName(workspaceService, listName);
@@ -163,7 +160,7 @@ export async function resolveListId(
     }
     return listInfo.id;
   }
-  
+
   // If neither is provided, throw an error
   throw new Error("Either listId or listName must be provided");
 } 

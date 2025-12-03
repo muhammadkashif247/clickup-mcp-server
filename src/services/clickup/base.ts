@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * Base ClickUp Service Class
  * 
  * This class provides core functionality for all ClickUp service modules:
@@ -86,7 +83,7 @@ function safeJsonParse(data: any, fallback: any = undefined): any {
   if (typeof data !== 'string') {
     return data;
   }
-  
+
   try {
     return JSON.parse(data);
   } catch (error) {
@@ -102,7 +99,7 @@ export class BaseClickUpService {
   protected readonly teamId: string;
   protected readonly client: AxiosInstance;
   protected readonly logger: Logger;
-  
+
   protected readonly defaultRequestSpacing = 600; // Default milliseconds between requests
   protected readonly rateLimit = 100; // Maximum requests per minute (Free Forever plan)
   protected requestSpacing: number; // Current request spacing, can be adjusted
@@ -121,7 +118,7 @@ export class BaseClickUpService {
     this.apiKey = apiKey;
     this.teamId = teamId;
     this.requestSpacing = this.defaultRequestSpacing;
-    
+
     // Create a logger with the actual class name for better context
     const className = this.constructor.name;
     this.logger = new Logger(`ClickUp:${className}`);
@@ -138,10 +135,10 @@ export class BaseClickUpService {
         // Add custom response transformer to handle both JSON and text responses
         (data: any) => {
           if (!data) return data;
-          
+
           // If it's already an object, return as is
           if (typeof data !== 'string') return data;
-          
+
           // Try to parse as JSON, fall back to raw text if parsing fails
           const parsed = safeJsonParse(data, null);
           return parsed !== null ? parsed : data;
@@ -170,7 +167,7 @@ export class BaseClickUpService {
     const responseData = error.response?.data;
     const errorMsg = responseData?.err || responseData?.error || error.message || 'Unknown API error';
     const path = error.config?.url || 'unknown path';
-    
+
     // Context object for providing more detailed log information
     const errorContext: {
       path: string;
@@ -206,16 +203,16 @@ export class BaseClickUpService {
     } else if (status === 429) {
       code = ErrorCode.RATE_LIMIT;
       this.handleRateLimitHeaders(error.response.headers);
-      
+
       // Calculate time until reset
       const reset = error.response.headers['x-ratelimit-reset'];
       const now = Date.now() / 1000; // Convert to seconds
       const timeToReset = Math.max(0, reset - now);
       const resetMinutes = Math.ceil(timeToReset / 60);
-      
+
       logMessage = `Rate limit exceeded for ${path}`;
       errorMessage = `Rate limit exceeded. Please wait ${resetMinutes} minute${resetMinutes === 1 ? '' : 's'} before trying again.`;
-      
+
       // Add more context to the error
       errorContext.rateLimitInfo = {
         limit: error.response.headers['x-ratelimit-limit'],
@@ -263,7 +260,7 @@ export class BaseClickUpService {
       const limit = headers['x-ratelimit-limit'];
       const remaining = headers['x-ratelimit-remaining'];
       const reset = headers['x-ratelimit-reset'];
-      
+
       // Only log if we're getting close to the limit
       if (remaining < limit * 0.2) {
         this.logger.warn('Approaching rate limit', { remaining, limit, reset });
@@ -273,26 +270,26 @@ export class BaseClickUpService {
 
       if (reset) {
         this.lastRateLimitReset = reset;
-        
+
         // If reset is in the future, calculate a safe request spacing
         const now = Date.now();
         const resetTime = reset * 1000; // convert to milliseconds
         const timeToReset = Math.max(0, resetTime - now);
-        
+
         // Proactively adjust spacing when remaining requests get low
         // This helps avoid hitting rate limits in the first place
         if (remaining < limit * 0.3) {
           // More aggressive spacing when close to limit
           let safeSpacing;
-          
+
           if (remaining <= 5) {
             // Very aggressive spacing for last few requests
             safeSpacing = Math.ceil((timeToReset / remaining) * 2);
             // Start processing in queue mode preemptively
             if (!this.processingQueue) {
-              this.logger.info('Preemptively switching to queue mode (low remaining requests)', { 
-                remaining, 
-                limit 
+              this.logger.info('Preemptively switching to queue mode (low remaining requests)', {
+                remaining,
+                limit
               });
               this.processingQueue = true;
               this.processQueue().catch(err => {
@@ -306,16 +303,16 @@ export class BaseClickUpService {
             // Standard safe spacing with buffer
             safeSpacing = Math.ceil((timeToReset / remaining) * 1.1);
           }
-          
+
           // Apply updated spacing, but with a reasonable maximum
           const maxSpacing = 5000; // 5 seconds max spacing
           const adjustedSpacing = Math.min(safeSpacing, maxSpacing);
-          
+
           // Only adjust if it's greater than our current spacing
           if (adjustedSpacing > this.requestSpacing) {
-            this.logger.debug(`Adjusting request spacing: ${this.requestSpacing}ms → ${adjustedSpacing}ms`, { 
-              remaining, 
-              timeToReset 
+            this.logger.debug(`Adjusting request spacing: ${this.requestSpacing}ms → ${adjustedSpacing}ms`, {
+              remaining,
+              timeToReset
             });
             this.requestSpacing = adjustedSpacing;
           }
@@ -353,10 +350,10 @@ export class BaseClickUpService {
         } else if (queueLength > 10) {
           delay = this.requestSpacing * 1.5;
         }
-        
+
         // Wait for the calculated delay
         await new Promise(resolve => setTimeout(resolve, delay));
-        
+
         // Run the request
         await request();
       }
@@ -371,7 +368,7 @@ export class BaseClickUpService {
     } finally {
       const duration = Date.now() - startTime;
       this.logger.trace(`Queue item processed in ${duration}ms, ${this.requestQueue.length} items remaining`);
-      
+
       // Continue processing the queue after the calculated delay
       setTimeout(() => this.processQueue(), this.requestSpacing);
     }
@@ -388,7 +385,7 @@ export class BaseClickUpService {
     if (this.processingQueue) {
       const queuePosition = this.requestQueue.length + 1;
       const estimatedWaitTime = Math.ceil((queuePosition * this.requestSpacing) / 1000);
-      
+
       this.logger.info('Request queued due to rate limiting', {
         queuePosition,
         estimatedWaitSeconds: estimatedWaitTime,
@@ -437,7 +434,7 @@ export class BaseClickUpService {
     try {
       // Execute the request function
       const result = await fn();
-      
+
       // Debug log for successful requests with timing information
       const duration = Date.now() - startTime;
       this.logger.debug(`Request completed successfully in ${duration}ms`, {
@@ -446,7 +443,7 @@ export class BaseClickUpService {
         duration,
         responseType: result ? typeof result : 'undefined'
       });
-      
+
       return result;
     } catch (error) {
       // If we hit a rate limit, start processing the queue
@@ -455,7 +452,7 @@ export class BaseClickUpService {
           reset: this.lastRateLimitReset,
           queueLength: this.requestQueue.length
         });
-        
+
         if (!this.processingQueue) {
           this.processingQueue = true;
           this.processQueue().catch(err => {

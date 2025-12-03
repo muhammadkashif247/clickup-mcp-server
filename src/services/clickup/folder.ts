@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * ClickUp Folder Service
  * 
  * Handles all operations related to folders in ClickUp, including:
@@ -14,7 +11,7 @@
 
 import { AxiosError } from 'axios';
 import { BaseClickUpService, ErrorCode, ClickUpServiceError, ServiceResponse } from './base.js';
-import { 
+import {
   ClickUpFolder,
   CreateFolderData
 } from './types.js';
@@ -22,7 +19,7 @@ import { WorkspaceService } from './workspace.js';
 
 export class FolderService extends BaseClickUpService {
   private workspaceService: WorkspaceService | null = null;
-  
+
   /**
    * Creates an instance of FolderService
    * @param apiKey - ClickUp API key
@@ -50,7 +47,7 @@ export class FolderService extends BaseClickUpService {
     if (error instanceof ClickUpServiceError) {
       return error;
     }
-    
+
     return new ClickUpServiceError(
       message || `Folder service error: ${error.message}`,
       ErrorCode.UNKNOWN,
@@ -67,12 +64,12 @@ export class FolderService extends BaseClickUpService {
   async createFolder(spaceId: string, folderData: CreateFolderData): Promise<ClickUpFolder> {
     try {
       this.logOperation('createFolder', { spaceId, ...folderData });
-      
+
       const response = await this.client.post<ClickUpFolder>(
         `/space/${spaceId}/folder`,
         folderData
       );
-      
+
       return response.data;
     } catch (error) {
       throw this.handleError(error, `Failed to create folder in space ${spaceId}`);
@@ -87,11 +84,11 @@ export class FolderService extends BaseClickUpService {
   async getFolder(folderId: string): Promise<ClickUpFolder> {
     try {
       this.logOperation('getFolder', { folderId });
-      
+
       const response = await this.client.get<ClickUpFolder>(
         `/folder/${folderId}`
       );
-      
+
       return response.data;
     } catch (error) {
       throw this.handleError(error, `Failed to get folder ${folderId}`);
@@ -107,12 +104,12 @@ export class FolderService extends BaseClickUpService {
   async updateFolder(folderId: string, updateData: Partial<CreateFolderData>): Promise<ClickUpFolder> {
     try {
       this.logOperation('updateFolder', { folderId, ...updateData });
-      
+
       const response = await this.client.put<ClickUpFolder>(
         `/folder/${folderId}`,
         updateData
       );
-      
+
       return response.data;
     } catch (error) {
       throw this.handleError(error, `Failed to update folder ${folderId}`);
@@ -127,9 +124,9 @@ export class FolderService extends BaseClickUpService {
   async deleteFolder(folderId: string): Promise<ServiceResponse<void>> {
     try {
       this.logOperation('deleteFolder', { folderId });
-      
+
       await this.client.delete(`/folder/${folderId}`);
-      
+
       return {
         success: true
       };
@@ -145,7 +142,7 @@ export class FolderService extends BaseClickUpService {
    */
   async getFoldersInSpace(spaceId: string): Promise<ClickUpFolder[]> {
     this.logOperation('getFoldersInSpace', { spaceId });
-    
+
     try {
       const response = await this.client.get<{ folders: ClickUpFolder[] }>(
         `/space/${spaceId}/folder`
@@ -164,13 +161,13 @@ export class FolderService extends BaseClickUpService {
    */
   async findFolderByName(spaceId: string, folderName: string): Promise<ClickUpFolder | null> {
     this.logOperation('findFolderByName', { spaceId, folderName });
-    
+
     try {
       const folders = await this.getFoldersInSpace(spaceId);
-      const matchingFolder = folders.find(folder => 
+      const matchingFolder = folders.find(folder =>
         folder.name.toLowerCase() === folderName.toLowerCase()
       );
-      
+
       return matchingFolder || null;
     } catch (error) {
       throw this.handleError(error, `Failed to find folder by name in space ${spaceId}`);

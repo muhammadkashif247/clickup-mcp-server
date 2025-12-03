@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * Time tracking service for ClickUp tasks
  * 
  * This service provides methods to manage time tracking for ClickUp tasks:
@@ -117,21 +114,21 @@ export class TimeTrackingService extends BaseClickUpService {
   async getTimeEntries(taskId: string, startDate?: number, endDate?: number): Promise<ServiceResponse<ClickUpTimeEntry[]>> {
     try {
       this.logOperation('getTimeEntries', { taskId, startDate, endDate });
-      
+
       // Build query parameters
       let query: Record<string, any> = {};
       if (startDate) query.start_date = startDate;
       if (endDate) query.end_date = endDate;
-      
+
       const path = `/task/${taskId}/time`;
       this.traceRequest('GET', path, query);
-      
+
       const response = await this.makeRequest<AxiosResponse<TimeEntriesResponse>>(() =>
         this.client.get(path, {
           params: query
         })
       );
-      
+
       return {
         success: true,
         data: response.data.data
@@ -147,7 +144,7 @@ export class TimeTrackingService extends BaseClickUpService {
           }
         };
       }
-      
+
       return {
         success: false,
         error: {
@@ -157,7 +154,7 @@ export class TimeTrackingService extends BaseClickUpService {
       };
     }
   }
-  
+
   /**
    * Start time tracking on a task
    * @param data Task ID and optional parameters
@@ -166,14 +163,14 @@ export class TimeTrackingService extends BaseClickUpService {
   async startTimeTracking(data: StartTimeTrackingData): Promise<ServiceResponse<ClickUpTimeEntry>> {
     try {
       this.logOperation('startTimeTracking', { taskId: data.tid });
-      
+
       const path = `/team/${this.teamId}/time_entries/start`;
       this.traceRequest('POST', path, data);
-      
+
       const response = await this.makeRequest<AxiosResponse<{ data: ClickUpTimeEntry }>>(() =>
         this.client.post(path, data)
       );
-      
+
       return {
         success: true,
         data: response.data.data
@@ -189,7 +186,7 @@ export class TimeTrackingService extends BaseClickUpService {
           }
         };
       }
-      
+
       return {
         success: false,
         error: {
@@ -199,7 +196,7 @@ export class TimeTrackingService extends BaseClickUpService {
       };
     }
   }
-  
+
   /**
    * Stop the currently running time tracker
    * @param data Optional parameters for the stopped time entry
@@ -208,14 +205,14 @@ export class TimeTrackingService extends BaseClickUpService {
   async stopTimeTracking(data?: StopTimeTrackingData): Promise<ServiceResponse<ClickUpTimeEntry>> {
     try {
       this.logOperation('stopTimeTracking', {});
-      
+
       const path = `/team/${this.teamId}/time_entries/stop`;
       this.traceRequest('POST', path, data || {});
-      
+
       const response = await this.makeRequest<AxiosResponse<{ data: ClickUpTimeEntry }>>(() =>
         this.client.post(path, data || {})
       );
-      
+
       return {
         success: true,
         data: response.data.data
@@ -231,7 +228,7 @@ export class TimeTrackingService extends BaseClickUpService {
           }
         };
       }
-      
+
       return {
         success: false,
         error: {
@@ -241,7 +238,7 @@ export class TimeTrackingService extends BaseClickUpService {
       };
     }
   }
-  
+
   /**
    * Add a manual time entry to a task
    * @param data Time entry data including task ID, start time, and duration
@@ -250,14 +247,14 @@ export class TimeTrackingService extends BaseClickUpService {
   async addTimeEntry(data: AddTimeEntryData): Promise<ServiceResponse<ClickUpTimeEntry>> {
     try {
       this.logOperation('addTimeEntry', { taskId: data.tid, duration: data.duration });
-      
+
       const path = `/team/${this.teamId}/time_entries`;
       this.traceRequest('POST', path, data);
-      
+
       const response = await this.makeRequest<AxiosResponse<{ data: ClickUpTimeEntry }>>(() =>
         this.client.post(path, data)
       );
-      
+
       return {
         success: true,
         data: response.data.data
@@ -273,7 +270,7 @@ export class TimeTrackingService extends BaseClickUpService {
           }
         };
       }
-      
+
       return {
         success: false,
         error: {
@@ -283,7 +280,7 @@ export class TimeTrackingService extends BaseClickUpService {
       };
     }
   }
-  
+
   /**
    * Delete a time entry
    * @param timeEntryId ID of the time entry to delete
@@ -292,14 +289,14 @@ export class TimeTrackingService extends BaseClickUpService {
   async deleteTimeEntry(timeEntryId: string): Promise<ServiceResponse<boolean>> {
     try {
       this.logOperation('deleteTimeEntry', { timeEntryId });
-      
+
       const path = `/team/${this.teamId}/time_entries/${timeEntryId}`;
       this.traceRequest('DELETE', path);
-      
+
       await this.makeRequest<AxiosResponse<any>>(() =>
         this.client.delete(path)
       );
-      
+
       return {
         success: true,
         data: true
@@ -315,7 +312,7 @@ export class TimeTrackingService extends BaseClickUpService {
           }
         };
       }
-      
+
       return {
         success: false,
         error: {
@@ -325,7 +322,7 @@ export class TimeTrackingService extends BaseClickUpService {
       };
     }
   }
-  
+
   /**
    * Get currently running time entry for the user
    * @returns The currently running time entry or null if no timer is running
@@ -333,14 +330,14 @@ export class TimeTrackingService extends BaseClickUpService {
   async getCurrentTimeEntry(): Promise<ServiceResponse<ClickUpTimeEntry | null>> {
     try {
       this.logOperation('getCurrentTimeEntry', {});
-      
+
       const path = `/team/${this.teamId}/time_entries/current`;
       this.traceRequest('GET', path);
-      
+
       const response = await this.makeRequest<AxiosResponse<{ data: ClickUpTimeEntry | null }>>(() =>
         this.client.get(path)
       );
-      
+
       return {
         success: true,
         data: response.data.data
@@ -356,7 +353,7 @@ export class TimeTrackingService extends BaseClickUpService {
           }
         };
       }
-      
+
       return {
         success: false,
         error: {

@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * ClickUp Task Service - Search Module
  * 
  * Handles search and lookup operations for tasks in ClickUp, including:
@@ -34,7 +31,7 @@ import { estimateTokensFromObject, wouldExceedTokenLimit } from '../../../utils/
  * Only depends on TaskServiceCore for base functionality.
  */
 export class TaskServiceSearch {
-  constructor(private core: TaskServiceCore) {}
+  constructor(private core: TaskServiceCore) { }
   /**
    * Find a task by name within a specific list
    * @param listId The ID of the list to search in
@@ -171,24 +168,24 @@ export class TaskServiceSearch {
       // If the estimated token count exceeds 50,000 or detail_level is 'summary',
       // return summary format for efficiency and to avoid hitting token limits
       const TOKEN_LIMIT = 50000;
-      
+
       // Estimate tokens for the full response
       let tokensExceedLimit = false;
-      
+
       if (filters.detail_level !== 'summary' && tasks.length > 0) {
         // We only need to check token count if detailed was requested
         // For summary requests, we always return summary format
-        
+
         // First check with a sample task - if one task exceeds the limit, we definitely need summary
         const sampleTask = tasks[0];
-        
+
         // Check if all tasks would exceed the token limit
         const estimatedTokensPerTask = (this.core as any).estimateTaskTokens(sampleTask);
         const estimatedTotalTokens = estimatedTokensPerTask * tasks.length;
-        
+
         // Add 10% overhead for the response wrapper
         tokensExceedLimit = estimatedTotalTokens * 1.1 > TOKEN_LIMIT;
-        
+
         // Double-check with more precise estimation if we're close to the limit
         if (!tokensExceedLimit && estimatedTotalTokens * 1.1 > TOKEN_LIMIT * 0.8) {
           // More precise check - build a representative sample and extrapolate
@@ -504,7 +501,7 @@ export class TaskServiceSearch {
           taskId = cachedTaskId;
         }
       }
-      
+
       // Case 1: Direct task ID lookup (highest priority)
       if (taskId) {
         // Check if it looks like a custom ID
@@ -553,7 +550,7 @@ export class TaskServiceSearch {
 
         return await this.core.getTaskByCustomId(customTaskId, resolvedListId);
       }
-      
+
       // Case 3: Task name lookup (requires either list context or global lookup)
       if (taskName) {
         // Case 3a: Task name + list context - search in specific list
@@ -610,15 +607,15 @@ export class TaskServiceSearch {
 
         // Create an index to efficiently look up list context information
         const hierarchy = await (this.core as any).workspaceService.getWorkspaceHierarchy();
-        const listContextMap = new Map<string, { 
-          listId: string, 
-          listName: string, 
-          spaceId: string, 
-          spaceName: string, 
-          folderId?: string, 
-          folderName?: string 
+        const listContextMap = new Map<string, {
+          listId: string,
+          listName: string,
+          spaceId: string,
+          spaceName: string,
+          folderId?: string,
+          folderName?: string
         }>();
-        
+
         // Function to recursively build list context map
         function buildListContextMap(nodes: any[], spaceId?: string, spaceName?: string, folderId?: string, folderName?: string) {
           for (const node of nodes) {
@@ -645,23 +642,23 @@ export class TaskServiceSearch {
             }
           }
         }
-        
+
         // Build the context map
         buildListContextMap(hierarchy.root.children);
-        
+
         // Find tasks that match the provided name with scored match results
-        const initialMatches: { 
-          id: string, 
-          task: any, 
+        const initialMatches: {
+          id: string,
+          task: any,
           listContext: any,
           matchScore: number,
           matchReason: string
         }[] = [];
-        
+
         // Process task summaries to find initial matches
         let taskCount = 0;
         let matchesFound = 0;
-        
+
         // Add additional logging to debug task matching
         (this.core as any).logOperation('findTasks', {
           total_tasks_in_response: response.summaries.length,
@@ -678,7 +675,7 @@ export class TaskServiceSearch {
 
           // For debugging, log every 20th task or any task with a similar name
           if (taskCount % 20 === 0 || taskSummary.name.toLowerCase().includes(taskName.toLowerCase()) ||
-              taskName.toLowerCase().includes(taskSummary.name.toLowerCase())) {
+            taskName.toLowerCase().includes(taskSummary.name.toLowerCase())) {
             (this.core as any).logOperation('findTasks:matching', {
               task_name: taskSummary.name,
               search_term: taskName,
@@ -688,12 +685,12 @@ export class TaskServiceSearch {
               match_reason: matchResult.reason || 'no-match'
             });
           }
-          
+
           if (isMatch) {
             matchesFound++;
             // Get list context information
             const listContext = listContextMap.get(taskSummary.list.id);
-            
+
             if (listContext) {
               // Store task summary and context with match score
               initialMatches.push({
@@ -706,7 +703,7 @@ export class TaskServiceSearch {
             }
           }
         }
-        
+
         (this.core as any).logOperation('findTasks', {
           globalSearch: true,
           searchTerm: taskName,
@@ -714,31 +711,31 @@ export class TaskServiceSearch {
           matchesFound: matchesFound,
           validMatchesWithContext: initialMatches.length
         });
-        
+
         // Handle the no matches case
         if (initialMatches.length === 0) {
           throw new Error(`Task "${taskName}" not found in any list across your workspace. Please check the task name and try again.`);
         }
-        
+
         // Sort matches by match score first (higher is better), then by update time
         initialMatches.sort((a, b) => {
           // First sort by match score (highest first)
           if (b.matchScore !== a.matchScore) {
             return b.matchScore - a.matchScore;
           }
-          
+
           // Try to get the date_updated from the task
           const aDate = a.task.date_updated ? parseInt(a.task.date_updated, 10) : 0;
           const bDate = b.task.date_updated ? parseInt(b.task.date_updated, 10) : 0;
-          
+
           // For equal scores, sort by most recently updated
           return bDate - aDate;
         });
-        
+
         // Handle the single match case - we can return early if we don't need full details
         if (initialMatches.length === 1 && !useSmartDisambiguation && !includeFullDetails) {
           const match = initialMatches[0];
-          
+
           if (includeListContext) {
             return {
               ...match.task,
@@ -756,17 +753,17 @@ export class TaskServiceSearch {
               }
             };
           }
-          
+
           return match.task;
         }
-        
+
         // Handle the exact match case - if there's an exact or very good match, prefer it over others
         // This is our key improvement to prefer exact matches over update time
         const bestMatchScore = initialMatches[0].matchScore;
         if (bestMatchScore >= 80) { // 80+ is an exact match or case-insensitive exact match
           // If there's a single best match with score 80+, use it directly
           const exactMatches = initialMatches.filter(m => m.matchScore >= 80);
-          
+
           if (exactMatches.length === 1 && !allowMultipleMatches) {
             (this.core as any).logOperation('findTasks', {
               message: `Found single exact match with score ${exactMatches[0].matchScore}, prioritizing over other matches`,
@@ -798,7 +795,7 @@ export class TaskServiceSearch {
 
             // Otherwise, get the full details
             const fullTask = await this.core.getTask(exactMatches[0].id);
-            
+
             if (includeListContext) {
               const match = exactMatches[0];
               // Enhance task with context information
@@ -806,68 +803,68 @@ export class TaskServiceSearch {
                 ...fullTask.list,
                 name: match.listContext.listName
               };
-              
+
               if (match.listContext.folderId) {
                 (fullTask as any).folder = {
                   id: match.listContext.folderId,
                   name: match.listContext.folderName
                 };
               }
-              
+
               (fullTask as any).space = {
                 id: match.listContext.spaceId,
                 name: match.listContext.spaceName
               };
             }
-            
+
             return fullTask;
           }
         }
-        
+
         // For multiple matches or when we need details, fetch full task info
         const fullMatches: ClickUpTask[] = [];
         const matchScoreMap = new Map<string, number>(); // To preserve match scores
-        
+
         try {
           // Process in sequence for better reliability
           for (const match of initialMatches) {
             const fullTask = await this.core.getTask(match.id);
             matchScoreMap.set(fullTask.id, match.matchScore);
-            
+
             if (includeListContext) {
               // Enhance task with context information
               (fullTask as any).list = {
                 ...fullTask.list,
                 name: match.listContext.listName
               };
-              
+
               if (match.listContext.folderId) {
                 (fullTask as any).folder = {
                   id: match.listContext.folderId,
                   name: match.listContext.folderName
                 };
               }
-              
+
               (fullTask as any).space = {
                 id: match.listContext.spaceId,
                 name: match.listContext.spaceName
               };
             }
-            
+
             fullMatches.push(fullTask);
           }
-          
+
           // Sort matches - first by match score, then by update time
           if (fullMatches.length > 1) {
             fullMatches.sort((a, b) => {
               // First sort by match score (highest first)
               const aScore = matchScoreMap.get(a.id) || 0;
               const bScore = matchScoreMap.get(b.id) || 0;
-              
+
               if (aScore !== bScore) {
                 return bScore - aScore;
               }
-              
+
               // For equal scores, sort by update time
               const aDate = parseInt(a.date_updated || '0', 10);
               const bDate = parseInt(b.date_updated || '0', 10);
@@ -879,7 +876,7 @@ export class TaskServiceSearch {
             error: error.message,
             message: "Failed to get detailed task information"
           });
-          
+
           // If detailed fetch fails, use the summaries with context info
           // This fallback ensures we still return something useful
           if (allowMultipleMatches) {
@@ -918,14 +915,14 @@ export class TaskServiceSearch {
             };
           }
         }
-        
+
         // After finding the task in global search, cache the mapping
         if (initialMatches.length === 1 || useSmartDisambiguation) {
           const bestMatch = fullMatches[0];
           (this.core as any).cacheTaskNameToId(taskName, bestMatch.id, bestMatch.list?.id);
           return bestMatch;
         }
-        
+
         // Return results based on options
         if (fullMatches.length === 1 || useSmartDisambiguation) {
           return fullMatches[0]; // Return best match (sorted by score then update time)
@@ -937,38 +934,38 @@ export class TaskServiceSearch {
             const listName = task.list?.name || "Unknown list";
             const folderName = (task as any).folder?.name;
             const spaceName = (task as any).space?.name || "Unknown space";
-            
-            const updateTime = task.date_updated 
+
+            const updateTime = task.date_updated
               ? new Date(parseInt(task.date_updated, 10)).toLocaleString()
               : "Unknown date";
-              
+
             const matchScore = matchScoreMap.get(task.id) || 0;
-            const matchQuality = 
+            const matchQuality =
               matchScore >= 100 ? "Exact match" :
-              matchScore >= 80 ? "Case-insensitive exact match" :
-              matchScore >= 70 ? "Text match ignoring emojis" :
-              matchScore >= 50 ? "Contains search term" :
-              "Partial match";
-              
+                matchScore >= 80 ? "Case-insensitive exact match" :
+                  matchScore >= 70 ? "Text match ignoring emojis" :
+                    matchScore >= 50 ? "Contains search term" :
+                      "Partial match";
+
             const location = `list "${listName}"${folderName ? ` (folder: "${folderName}")` : ''} (space: "${spaceName}")`;
             return `- "${task.name}" in ${location} - Updated ${updateTime} - Match quality: ${matchQuality} (${matchScore}/100)`;
           }).join('\n');
-          
+
           throw new Error(`Multiple tasks found with name "${taskName}":\n${matchesInfo}\n\nPlease provide list context to disambiguate, use the exact task name with requireExactMatch=true, or set allowMultipleMatches to true.`);
         }
       }
-      
+
       // No valid lookup parameters provided
       throw new Error("At least one of taskId, customTaskId, or taskName must be provided");
     } catch (error) {
       if (error.message?.includes('Task "') && error.message?.includes('not found')) {
         throw error;
       }
-      
+
       if (error.message?.includes('Multiple tasks found')) {
         throw error;
       }
-      
+
       // Unexpected errors
       throw (this.core as any).handleError(error, `Error finding task: ${error.message}`);
     }
@@ -1006,7 +1003,7 @@ export class TaskServiceSearch {
    */
   async findTaskByNameGlobally(taskName: string): Promise<ClickUpTask | null> {
     (this.core as any).logOperation('findTaskByNameGlobally', { taskName });
-    
+
     // Use a static cache for task data to avoid redundant API calls
     // This dramatically reduces API usage across multiple task lookups
     if (!this.constructor.hasOwnProperty('_taskCache')) {
@@ -1019,10 +1016,10 @@ export class TaskServiceSearch {
         writable: true
       });
     }
-    
+
     const cache = (this.constructor as any)._taskCache;
     const now = Date.now();
-    
+
     try {
       // Use cached tasks if available and not expired
       let tasks: ClickUpTask[] = [];
@@ -1067,11 +1064,11 @@ export class TaskServiceSearch {
         matchCount: taskMatches.length,
         taskName
       });
-      
+
       if (taskMatches.length === 0) {
         return null;
       }
-      
+
       // First try exact matches
       const exactMatches = taskMatches
         .filter(result => result.matchResult.exactMatch)
@@ -1082,7 +1079,7 @@ export class TaskServiceSearch {
           }
           return b.matchResult.score - a.matchResult.score;
         });
-      
+
       // Get the best matches based on whether we have exact matches or need to fall back to fuzzy matches
       const bestMatches = exactMatches.length > 0 ? exactMatches : taskMatches.sort((a, b) => {
         // First sort by match score (highest first)
@@ -1092,7 +1089,7 @@ export class TaskServiceSearch {
         // Then sort by most recently updated
         return b.updatedAt - a.updatedAt;
       });
-      
+
       // Log the top matches for debugging
       const topMatches = bestMatches.slice(0, 3).map(match => ({
         taskName: match.task.name,
@@ -1101,7 +1098,7 @@ export class TaskServiceSearch {
         updatedAt: match.updatedAt,
         list: match.task.list?.name || 'Unknown list'
       }));
-      
+
       (this.core as any).logOperation('findTaskByNameGlobally', { topMatches });
 
       // Return the best match
@@ -1115,7 +1112,7 @@ export class TaskServiceSearch {
           message: 'Using expired cache due to API error',
           cacheAge: now - cache.lastFetch
         });
-        
+
         // Perform the same matching logic with cached data
         const taskMatches = cache.tasks
           .map(task => {
@@ -1133,12 +1130,12 @@ export class TaskServiceSearch {
             }
             return b.updatedAt - a.updatedAt;
           });
-          
+
         if (taskMatches.length > 0) {
           return taskMatches[0].task;
         }
       }
-      
+
       return null;
     }
   }

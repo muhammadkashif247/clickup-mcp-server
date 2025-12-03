@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * SSE and HTTP Streamable Transport Server
  *
  * This module provides HTTP Streamable and legacy SSE transport support

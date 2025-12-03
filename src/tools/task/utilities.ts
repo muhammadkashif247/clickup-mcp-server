@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * ClickUp MCP Task Utilities
  * 
  * This module provides utility functions for task-related operations including
@@ -184,14 +181,14 @@ export function validateTaskIdentification(
   params: TaskIdentificationParams,
   options: TaskIdentificationValidationOptions = {}
 ): TaskValidationResult {
-  const { 
-    taskId, 
-    taskName, 
+  const {
+    taskId,
+    taskName,
     customTaskId,
     listName
   } = params;
-  
-  const { 
+
+  const {
     requireTaskId = false,
     useGlobalLookup = true
   } = options;
@@ -243,14 +240,14 @@ export function validateTaskUpdateData(updateData: any): void {
     if (!Array.isArray(updateData.custom_fields)) {
       throw new Error("custom_fields must be an array");
     }
-    
+
     for (const field of updateData.custom_fields) {
       if (!field.id || field.value === undefined) {
         throw new Error("Each custom field must have both id and value properties");
       }
     }
   }
-  
+
   // Ensure there's at least one field to update
   if (Object.keys(updateData).length === 0) {
     throw new Error("At least one field to update must be provided");
@@ -312,17 +309,17 @@ export function parseBulkOptions(rawOptions: any): BatchProcessingOptions | unde
 export async function resolveListIdWithValidation(listId?: string, listName?: string): Promise<string> {
   // Validate parameters
   validateListIdentification(listId, listName);
-  
+
   // If listId is provided, use it directly
   if (listId) return listId;
-  
+
   // At this point we know we have listName (validation ensures this)
   const listInfo = await findListIDByName(workspaceService, listName!);
-  
+
   if (!listInfo) {
     throw new Error(`List "${listName}" not found`);
   }
-  
+
   return listInfo.id;
 }
 
@@ -344,12 +341,12 @@ export function extractPath(node: any): string {
  */
 export function extractTreePath(root: any, targetId: string): any[] {
   if (!root) return [];
-  
+
   // If this node is the target, return it in an array
   if (root.id === targetId) {
     return [root];
   }
-  
+
   // Check children if they exist
   if (root.children) {
     for (const child of root.children) {
@@ -359,7 +356,7 @@ export function extractTreePath(root: any, targetId: string): any[] {
       }
     }
   }
-  
+
   // Not found in this branch
   return [];
 }
@@ -379,7 +376,7 @@ export async function getTaskId(
     { taskId, taskName, listName, customTaskId },
     { requireTaskId: requireId, useGlobalLookup: true }
   );
-  
+
   if (!validationResult.isValid) {
     throw new Error(validationResult.errorMessage);
   }

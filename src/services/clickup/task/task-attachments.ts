@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * ClickUp Task Service - Attachments Module
  *
  * Handles file attachment operations for ClickUp tasks, supporting three methods:
@@ -23,7 +20,7 @@ import { ClickUpTaskAttachment } from '../types.js';
  * It uses composition to access core functionality instead of inheritance.
  */
 export class TaskServiceAttachments {
-  constructor(private core: TaskServiceCore) {}
+  constructor(private core: TaskServiceCore) { }
   /**
    * Upload a file attachment to a ClickUp task
    * @param taskId The ID of the task to attach the file to
@@ -86,30 +83,30 @@ export class TaskServiceAttachments {
         // Import required modules
         const axios = (await import('axios')).default;
         const FormData = (await import('form-data')).default;
-        
+
         // Download the file from the URL
         const headers: Record<string, string> = {};
         if (authHeader) {
           headers['Authorization'] = authHeader;
         }
-        
+
         const response = await axios.get(fileUrl, {
           responseType: 'arraybuffer',
           headers
         });
-        
+
         // Extract filename from URL if not provided
         const actualFileName = fileName || fileUrl.split('/').pop() || 'downloaded-file';
-        
+
         // Create FormData for multipart/form-data upload
         const formData = new FormData();
-        
+
         // Add the file to the form data
         formData.append('attachment', Buffer.from(response.data), {
           filename: actualFileName,
           contentType: 'application/octet-stream'
         });
-        
+
         // Upload the file to ClickUp
         const uploadResponse = await (this.core as any).client.post(
           `/task/${taskId}/attachment`,

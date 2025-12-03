@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * Task time tracking tools
  * 
  * This module provides tools for time tracking operations on ClickUp tasks:
@@ -558,12 +555,12 @@ function calculateElapsedTime(startTimeString: string): number {
  */
 function formatDuration(durationMs: number): string {
   if (!durationMs) return "0m";
-  
+
   const seconds = Math.floor(durationMs / 1000);
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
   const remainingMinutes = minutes % 60;
-  
+
   if (hours === 0) {
     return `${remainingMinutes}m`;
   } else if (remainingMinutes === 0) {
@@ -578,38 +575,38 @@ function formatDuration(durationMs: number): string {
  */
 function parseDuration(durationString: string): number {
   if (!durationString) return 0;
-  
+
   // Clean the input and handle potential space issues
   const cleanDuration = durationString.trim().toLowerCase().replace(/\s+/g, ' ');
-  
+
   // Handle simple minute format like "90m"
   if (/^\d+m$/.test(cleanDuration)) {
     const minutes = parseInt(cleanDuration.replace('m', ''), 10);
     return minutes * 60 * 1000;
   }
-  
+
   // Handle simple hour format like "2h"
   if (/^\d+h$/.test(cleanDuration)) {
     const hours = parseInt(cleanDuration.replace('h', ''), 10);
     return hours * 60 * 60 * 1000;
   }
-  
+
   // Handle combined format like "1h 30m"
   const combinedPattern = /^(\d+)h\s*(?:(\d+)m)?$|^(?:(\d+)h\s*)?(\d+)m$/;
   const match = cleanDuration.match(combinedPattern);
-  
+
   if (match) {
     const hours = parseInt(match[1] || match[3] || '0', 10);
     const minutes = parseInt(match[2] || match[4] || '0', 10);
     return (hours * 60 * 60 + minutes * 60) * 1000;
   }
-  
+
   // Try to parse as just a number of minutes
   const justMinutes = parseInt(cleanDuration, 10);
   if (!isNaN(justMinutes)) {
     return justMinutes * 60 * 1000;
   }
-  
+
   return 0;
 }
 

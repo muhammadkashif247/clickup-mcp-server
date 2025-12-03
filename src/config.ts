@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * Configuration handling for ClickUp API credentials and application settings
  *
  * The required environment variables (CLICKUP_API_KEY and CLICKUP_TEAM_ID) are passed 
@@ -54,7 +51,7 @@ export enum LogLevel {
 // Parse LOG_LEVEL string to LogLevel enum
 const parseLogLevel = (levelStr: string | undefined): LogLevel => {
   if (!levelStr) return LogLevel.ERROR; // Default to ERROR if not specified
-  
+
   switch (levelStr.toUpperCase()) {
     case 'TRACE': return LogLevel.TRACE;
     case 'DEBUG': return LogLevel.DEBUG;

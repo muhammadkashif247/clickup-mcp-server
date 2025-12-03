@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * Logger module for MCP Server
  * 
  * This module provides logging functionality for the server,
@@ -47,36 +44,36 @@ function isLevelEnabled(level: LogLevel): boolean {
  * @param data Optional data to include in log
  */
 function log(level: 'trace' | 'debug' | 'info' | 'warn' | 'error', message: string, data?: any) {
-  const levelEnum = level === 'trace' ? LogLevel.TRACE 
+  const levelEnum = level === 'trace' ? LogLevel.TRACE
     : level === 'debug' ? LogLevel.DEBUG
-    : level === 'info' ? LogLevel.INFO
-    : level === 'warn' ? LogLevel.WARN 
-    : LogLevel.ERROR;
-  
+      : level === 'info' ? LogLevel.INFO
+        : level === 'warn' ? LogLevel.WARN
+          : LogLevel.ERROR;
+
   // Skip if level is below configured level
   if (!isLevelEnabled(levelEnum)) {
     return;
   }
-  
+
   const timestamp = new Date().toISOString();
-  
+
   // Format the log message differently based on the level and data
   let logMessage = `[${timestamp}] [PID:${pid}] ${level.toUpperCase()}: ${message}`;
-  
+
   // Format data differently based on content and log level
   if (data) {
     // For debugging and trace levels, try to make the data more readable
     if (level === 'debug' || level === 'trace') {
       // If data is a simple object with few properties, format it inline
-      if (typeof data === 'object' && data !== null && !Array.isArray(data) && 
-          Object.keys(data).length <= 4 && Object.keys(data).every(k => 
-            typeof data[k] !== 'object' || data[k] === null)) {
+      if (typeof data === 'object' && data !== null && !Array.isArray(data) &&
+        Object.keys(data).length <= 4 && Object.keys(data).every(k =>
+          typeof data[k] !== 'object' || data[k] === null)) {
         const dataStr = Object.entries(data)
-          .map(([k, v]) => `${k}=${v === undefined ? 'undefined' : 
-            (v === null ? 'null' : 
+          .map(([k, v]) => `${k}=${v === undefined ? 'undefined' :
+            (v === null ? 'null' :
               (typeof v === 'string' ? `"${v}"` : v))}`)
           .join(' ');
-        
+
         logMessage += ` (${dataStr})`;
       } else {
         // For more complex data, keep the JSON format but on new lines

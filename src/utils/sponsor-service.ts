@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * Sponsor Service Module
  * 
  * Provides configuration and utilities for sponsorship functionality
@@ -18,13 +15,13 @@ const logger = new Logger('SponsorService');
  */
 export class SponsorService {
   private isEnabled: boolean;
-  private readonly sponsorUrl: string = 'https://github.com/sponsors/taazkareem';
-  
+  private readonly sponsorUrl: string = '';
+
   constructor() {
     this.isEnabled = config.enableSponsorMessage;
     logger.info('SponsorService initialized', { enabled: this.isEnabled });
   }
-  
+
   /**
    * Get sponsor information (for documentation/reference purposes)
    */
@@ -40,7 +37,7 @@ export class SponsorService {
    */
   public createResponse(data: any, includeSponsorMessage: boolean = false): { content: { type: string; text: string }[] } {
     const content: { type: string; text: string }[] = [];
-    
+
     // Special handling for workspace hierarchy which contains a preformatted tree
     if (data && typeof data === 'object' && 'hierarchy' in data && typeof data.hierarchy === 'string') {
       // Handle workspace hierarchy specially - it contains a preformatted tree
@@ -61,7 +58,7 @@ export class SponsorService {
         text: JSON.stringify(data, null, 2)
       });
     }
-    
+
     // Then add sponsorship message if enabled
     if (this.isEnabled && includeSponsorMessage) {
       content.push({
@@ -69,8 +66,8 @@ export class SponsorService {
         text: `\n♥ Support this project by sponsoring the developer at ${this.sponsorUrl}`
       });
     }
-    
-    
+
+
     return { content };
   }
 

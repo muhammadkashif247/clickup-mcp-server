@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * ClickUp Bulk Service
  * 
  * Enhanced implementation for bulk operations that leverages the existing single-operation methods.
@@ -62,7 +59,7 @@ export class BulkService {
           logger.debug(`Creating task ${index + 1}/${tasks.length}`, {
             taskName: task.name
           });
-          
+
           // Reuse the single-task creation method
           return this.taskService.createTask(listId, task);
         },
@@ -153,7 +150,7 @@ export class BulkService {
     options?: BatchProcessingOptions
   ): Promise<BatchResult<ClickUpTask>> {
     logger.info('Starting bulk update operation', { taskCount: tasks.length });
-    
+
     try {
       return await processBatch(
         tasks,
@@ -183,11 +180,11 @@ export class BulkService {
     options?: BatchProcessingOptions
   ): Promise<BatchResult<ClickUpTask>> {
     logger.info('Starting bulk move operation', { taskCount: tasks.length, targetListId });
-    
+
     try {
       // Determine if targetListId is actually an ID or a name
       let resolvedTargetListId = targetListId;
-      
+
       // If the targetListId doesn't match the pattern of a list ID (usually just numbers),
       // assume it's a list name and try to resolve it
       if (!/^\d+$/.test(targetListId)) {
@@ -231,7 +228,7 @@ export class BulkService {
     options?: BatchProcessingOptions
   ): Promise<BatchResult<void>> {
     logger.info('Starting bulk delete operation', { taskCount: tasks.length });
-    
+
     try {
       return await processBatch(
         tasks,

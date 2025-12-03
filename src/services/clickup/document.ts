@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 João Santana <joaosantana@gmail.com>
- * SPDX-License-Identifier: MIT
- *
  * Document service for ClickUp
  * 
  * This service provides methods to manage ClickUp documents:
@@ -14,8 +11,8 @@
  */
 
 import { BaseClickUpService, ClickUpServiceError, ErrorCode } from './base.js';
-import { 
-  ClickUpDocument, 
+import {
+  ClickUpDocument,
   CreateDocumentData,
   ListDocumentsOptions,
   ClickUpDocumentResponse,
@@ -156,7 +153,7 @@ export class DocumentService extends BaseClickUpService {
     try {
       // Get pages in parallel
       this.logOperation('Getting pages for document with ID:', { documentId, pageIds, options });
-      const pagePromises = pageIds.map(pageId => 
+      const pagePromises = pageIds.map(pageId =>
         this.client.get(
           `/workspaces/${this.teamId}/docs/${documentId}/pages/${pageId}`,
           { params: { ...options, pageIds } }

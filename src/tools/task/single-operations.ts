@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * ClickUp MCP Single Task Operations
  * 
  * This module defines tools for single task operations including creating,
@@ -9,16 +6,16 @@
  * task details and comments.
  */
 
-import { 
+import {
   ClickUpComment,
-  ClickUpTask, 
+  ClickUpTask,
   CreateTaskData,
-  TaskPriority, 
+  TaskPriority,
   UpdateTaskData
 } from '../../services/clickup/types.js';
 import { parseDueDate } from '../utils.js';
 import { clickUpServices } from '../../services/shared.js';
-import { 
+import {
   formatTaskData,
   resolveListIdWithValidation,
   validateTaskUpdateData,

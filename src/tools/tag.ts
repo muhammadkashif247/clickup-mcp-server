@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * ClickUp Tag Tools
  * 
  * Provides tools for managing tags in ClickUp:
@@ -277,19 +274,19 @@ function createHandlerWrapper<T>(
   return async (params: any) => {
     try {
       logger.debug('Handler called with params', { params });
-      
+
       // Call the handler
       const result = await handler(params);
-      
+
       // Format the result for response
       const formattedResult = formatResponse(result);
-      
+
       // Use the sponsor service to create the formatted response
       return sponsorService.createResponse(formattedResult, true);
     } catch (error: any) {
       // Log the error
       logger.error('Error in handler', { error: error.message, code: error.code });
-      
+
       // Format and return the error using sponsor service
       return sponsorService.createErrorResponse(error, params);
     }
@@ -377,44 +374,44 @@ export async function getSpaceTags(params: {
   spaceName?: string;
 }): Promise<ClickUpTag[]> {
   const { spaceId, spaceName } = params;
-  
+
   if (!spaceId && !spaceName) {
     logger.error('getSpaceTags called without required parameters');
     throw new Error('Either spaceId or spaceName is required');
   }
 
   logger.info('Getting tags for space', { spaceId, spaceName });
-  
+
   try {
     // If spaceName is provided, we need to resolve it to an ID
     let resolvedSpaceId = spaceId;
     if (!resolvedSpaceId && spaceName) {
       logger.debug(`Resolving space name: ${spaceName}`);
-      
+
       const spaces = await clickUpServices.workspace.getSpaces();
-      
-      const space = spaces.find(s => 
+
+      const space = spaces.find(s =>
         s.name.toLowerCase() === spaceName.toLowerCase()
       );
-      
+
       if (!space) {
         logger.error(`Space not found: ${spaceName}`);
         throw new Error(`Space not found: ${spaceName}`);
       }
-      
+
       resolvedSpaceId = space.id;
     }
-    
+
     // Get tags from the space
     const tagsResponse = await clickUpServices.tag.getSpaceTags(resolvedSpaceId);
-    
+
     if (!tagsResponse.success) {
       logger.error('Failed to get space tags', tagsResponse.error);
       throw new Error(tagsResponse.error?.message || 'Failed to get space tags');
     }
-    
+
     logger.info(`Successfully retrieved ${tagsResponse.data?.length || 0} tags`);
-    
+
     return tagsResponse.data || [];
   } catch (error) {
     logger.error('Error in getSpaceTags', error);
@@ -436,7 +433,7 @@ export async function createSpaceTag(params: {
   colorCommand?: string;
 }) {
   let { spaceId, spaceName, tagName, tagBg = '#000000', tagFg = '#ffffff', colorCommand } = params;
-  
+
   // Process color command if provided
   if (colorCommand) {
     const colors = processColorCommand(colorCommand);
@@ -448,7 +445,7 @@ export async function createSpaceTag(params: {
       logger.warn(`Could not process color command: "${colorCommand}". Using default colors.`);
     }
   }
-  
+
   if (!tagName) {
     logger.error('createSpaceTag called without tagName');
     return {
@@ -458,7 +455,7 @@ export async function createSpaceTag(params: {
       }
     };
   }
-  
+
   if (!spaceId && !spaceName) {
     logger.error('createSpaceTag called without space identifier');
     return {
@@ -470,19 +467,19 @@ export async function createSpaceTag(params: {
   }
 
   logger.info('Creating tag in space', { spaceId, spaceName, tagName, tagBg, tagFg });
-  
+
   try {
     // If spaceName is provided, we need to resolve it to an ID
     let resolvedSpaceId = spaceId;
     if (!resolvedSpaceId && spaceName) {
       logger.debug(`Resolving space name: ${spaceName}`);
-      
+
       const spaces = await clickUpServices.workspace.getSpaces();
-      
-      const space = spaces.find(s => 
+
+      const space = spaces.find(s =>
         s.name.toLowerCase() === spaceName.toLowerCase()
       );
-      
+
       if (!space) {
         logger.error(`Space not found: ${spaceName}`);
         return {
@@ -492,17 +489,17 @@ export async function createSpaceTag(params: {
           }
         };
       }
-      
+
       resolvedSpaceId = space.id;
     }
-    
+
     // Create tag in the space
     const tagResponse = await clickUpServices.tag.createSpaceTag(resolvedSpaceId, {
       tag_name: tagName,
       tag_bg: tagBg,
       tag_fg: tagFg
     });
-    
+
     if (!tagResponse.success) {
       logger.error('Failed to create space tag', tagResponse.error);
       return {
@@ -512,9 +509,9 @@ export async function createSpaceTag(params: {
         }
       };
     }
-    
+
     logger.info(`Successfully created tag: ${tagName}`);
-    
+
     return {
       success: true,
       data: tagResponse.data
@@ -548,7 +545,7 @@ export async function updateSpaceTag(params: {
 }) {
   const { spaceId, spaceName, tagName, newTagName, colorCommand } = params;
   let { tagBg, tagFg } = params;
-  
+
   // Process color command if provided
   if (colorCommand) {
     const colors = processColorCommand(colorCommand);
@@ -560,7 +557,7 @@ export async function updateSpaceTag(params: {
       logger.warn(`Could not process color command: "${colorCommand}". Using default colors.`);
     }
   }
-  
+
   if (!tagName) {
     logger.error('updateSpaceTag called without tagName');
     return {
@@ -570,7 +567,7 @@ export async function updateSpaceTag(params: {
       }
     };
   }
-  
+
   if (!spaceId && !spaceName) {
     logger.error('updateSpaceTag called without space identifier');
     return {
@@ -580,7 +577,7 @@ export async function updateSpaceTag(params: {
       }
     };
   }
-  
+
   // Make sure there's at least one property to update
   if (!newTagName && !tagBg && !tagFg && !colorCommand) {
     logger.error('updateSpaceTag called without properties to update');
@@ -593,19 +590,19 @@ export async function updateSpaceTag(params: {
   }
 
   logger.info('Updating tag in space', { spaceId, spaceName, tagName, newTagName, tagBg, tagFg });
-  
+
   try {
     // If spaceName is provided, we need to resolve it to an ID
     let resolvedSpaceId = spaceId;
     if (!resolvedSpaceId && spaceName) {
       logger.debug(`Resolving space name: ${spaceName}`);
-      
+
       const spaces = await clickUpServices.workspace.getSpaces();
-      
-      const space = spaces.find(s => 
+
+      const space = spaces.find(s =>
         s.name.toLowerCase() === spaceName.toLowerCase()
       );
-      
+
       if (!space) {
         logger.error(`Space not found: ${spaceName}`);
         return {
@@ -615,24 +612,24 @@ export async function updateSpaceTag(params: {
           }
         };
       }
-      
+
       resolvedSpaceId = space.id;
     }
-    
+
     // Prepare update data
     const updateData: {
       tag_name?: string;
       tag_bg?: string;
       tag_fg?: string;
     } = {};
-    
+
     if (newTagName) updateData.tag_name = newTagName;
     if (tagBg) updateData.tag_bg = tagBg;
     if (tagFg) updateData.tag_fg = tagFg;
-    
+
     // Update tag in the space
     const tagResponse = await clickUpServices.tag.updateSpaceTag(resolvedSpaceId, tagName, updateData);
-    
+
     if (!tagResponse.success) {
       logger.error('Failed to update space tag', tagResponse.error);
       return {
@@ -642,9 +639,9 @@ export async function updateSpaceTag(params: {
         }
       };
     }
-    
+
     logger.info(`Successfully updated tag: ${tagName}`);
-    
+
     return {
       success: true,
       data: tagResponse.data
@@ -673,7 +670,7 @@ export async function deleteSpaceTag(params: {
   tagName: string;
 }) {
   const { spaceId, spaceName, tagName } = params;
-  
+
   if (!tagName) {
     logger.error('deleteSpaceTag called without tagName');
     return {
@@ -683,7 +680,7 @@ export async function deleteSpaceTag(params: {
       }
     };
   }
-  
+
   if (!spaceId && !spaceName) {
     logger.error('deleteSpaceTag called without space identifier');
     return {
@@ -695,19 +692,19 @@ export async function deleteSpaceTag(params: {
   }
 
   logger.info('Deleting tag from space', { spaceId, spaceName, tagName });
-  
+
   try {
     // If spaceName is provided, we need to resolve it to an ID
     let resolvedSpaceId = spaceId;
     if (!resolvedSpaceId && spaceName) {
       logger.debug(`Resolving space name: ${spaceName}`);
-      
+
       const spaces = await clickUpServices.workspace.getSpaces();
-      
-      const space = spaces.find(s => 
+
+      const space = spaces.find(s =>
         s.name.toLowerCase() === spaceName.toLowerCase()
       );
-      
+
       if (!space) {
         logger.error(`Space not found: ${spaceName}`);
         return {
@@ -717,13 +714,13 @@ export async function deleteSpaceTag(params: {
           }
         };
       }
-      
+
       resolvedSpaceId = space.id;
     }
-    
+
     // Delete tag from the space
     const tagResponse = await clickUpServices.tag.deleteSpaceTag(resolvedSpaceId, tagName);
-    
+
     if (!tagResponse.success) {
       logger.error('Failed to delete space tag', tagResponse.error);
       return {
@@ -733,9 +730,9 @@ export async function deleteSpaceTag(params: {
         }
       };
     }
-    
+
     logger.info(`Successfully deleted tag: ${tagName}`);
-    
+
     return {
       success: true
     };
@@ -762,7 +759,7 @@ async function resolveTaskId(params: {
   listName?: string;
 }): Promise<{ success: boolean; taskId?: string; error?: any }> {
   const { taskId, customTaskId, taskName, listName } = params;
-  
+
   try {
     // First validate task identification with global lookup enabled
     const validationResult = validateTaskIdentification(
@@ -820,7 +817,7 @@ export async function addTagToTask(params: {
   tagName: string;
 }) {
   const { taskId, customTaskId, taskName, listName, tagName } = params;
-  
+
   if (!tagName) {
     logger.error('addTagToTask called without tagName');
     return {
@@ -830,7 +827,7 @@ export async function addTagToTask(params: {
       }
     };
   }
-  
+
   if (!taskId && !customTaskId && !taskName) {
     logger.error('addTagToTask called without task identifier');
     return {
@@ -842,24 +839,24 @@ export async function addTagToTask(params: {
   }
 
   logger.info('Adding tag to task', { taskId, customTaskId, taskName, listName, tagName });
-  
+
   try {
     // Resolve the task ID
     const taskIdResult = await resolveTaskId({ taskId, customTaskId, taskName, listName });
-    
+
     if (!taskIdResult.success) {
       return {
         success: false,
         error: taskIdResult.error
       };
     }
-    
+
     // Add tag to the task
     const result = await clickUpServices.tag.addTagToTask(taskIdResult.taskId, tagName);
-    
+
     if (!result.success) {
       logger.error('Failed to add tag to task', result.error);
-      
+
       // Provide more specific error messages based on error code
       if (result.error?.code === 'TAG_NOT_FOUND') {
         return {
@@ -883,7 +880,7 @@ export async function addTagToTask(params: {
           }
         };
       }
-      
+
       return {
         success: false,
         error: result.error || {
@@ -891,9 +888,9 @@ export async function addTagToTask(params: {
         }
       };
     }
-    
+
     logger.info(`Successfully added tag "${tagName}" to task ${taskIdResult.taskId}`);
-    
+
     return {
       success: true
     };
@@ -923,7 +920,7 @@ export async function removeTagFromTask(params: {
   tagName: string;
 }) {
   const { taskId, customTaskId, taskName, listName, tagName } = params;
-  
+
   if (!tagName) {
     logger.error('removeTagFromTask called without tagName');
     return {
@@ -933,7 +930,7 @@ export async function removeTagFromTask(params: {
       }
     };
   }
-  
+
   if (!taskId && !customTaskId && !taskName) {
     logger.error('removeTagFromTask called without task identifier');
     return {
@@ -945,21 +942,21 @@ export async function removeTagFromTask(params: {
   }
 
   logger.info('Removing tag from task', { taskId, customTaskId, taskName, listName, tagName });
-  
+
   try {
     // Resolve the task ID
     const taskIdResult = await resolveTaskId({ taskId, customTaskId, taskName, listName });
-    
+
     if (!taskIdResult.success) {
       return {
         success: false,
         error: taskIdResult.error
       };
     }
-    
+
     // Remove tag from the task
     const result = await clickUpServices.tag.removeTagFromTask(taskIdResult.taskId, tagName);
-    
+
     if (!result.success) {
       logger.error('Failed to remove tag from task', result.error);
       return {
@@ -969,9 +966,9 @@ export async function removeTagFromTask(params: {
         }
       };
     }
-    
+
     logger.info(`Successfully removed tag "${tagName}" from task ${taskIdResult.taskId}`);
-    
+
     return {
       success: true
     };

@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * Date Utility Functions
  * 
  * This module provides utilities for handling dates, timestamps, and due date parsing.
@@ -24,13 +21,13 @@ const logger = new Logger('DateUtils');
  */
 export function getRelativeTimestamp(minutes = 0, hours = 0, days = 0, weeks = 0, months = 0): number {
   const now = new Date();
-  
+
   if (minutes) now.setMinutes(now.getMinutes() + minutes);
   if (hours) now.setHours(now.getHours() + hours);
   if (days) now.setDate(now.getDate() + days);
   if (weeks) now.setDate(now.getDate() + (weeks * 7));
   if (months) now.setMonth(now.getMonth() + months);
-  
+
   return now.getTime();
 }
 
@@ -384,7 +381,7 @@ export function parseDueDate(dateString: string): number | undefined {
 
       return targetDate.getTime();
     }
-    
+
     // Note: Relative date patterns are now handled by enhanced patterns above
     // Legacy support for "X from now" patterns
     const legacyRelativeFormats = [
@@ -401,12 +398,12 @@ export function parseDueDate(dateString: string): number | undefined {
         return format.handler(value);
       }
     }
-    
+
     // Handle specific date formats
     // Format: MM/DD/YYYY with enhanced time support (handles both "5pm" and "5 pm")
     const usDateRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2})(?::(\d{1,2}))?\s*(am|pm)?)?$/i;
     const usDateMatch = lowerDate.match(usDateRegex);
-    
+
     if (usDateMatch) {
       const [_, month, day, year, hours, minutes, meridian] = usDateMatch;
       const date = new Date(
@@ -414,10 +411,10 @@ export function parseDueDate(dateString: string): number | undefined {
         parseInt(month) - 1, // JS months are 0-indexed
         parseInt(day)
       );
-      
+
       // Add time if specified
       setTimeOnDate(date, hours, minutes, meridian);
-      
+
       return date.getTime();
     }
 
@@ -447,7 +444,7 @@ export function parseDueDate(dateString: string): number | undefined {
     if (textMonthMatch) {
       const [_, monthName, day, year, hours, minutes, meridian] = textMonthMatch;
       const monthNames = ['january', 'february', 'march', 'april', 'may', 'june',
-                         'july', 'august', 'september', 'october', 'november', 'december'];
+        'july', 'august', 'september', 'october', 'november', 'december'];
       const monthIndex = monthNames.indexOf(monthName.toLowerCase());
 
       if (monthIndex !== -1) {
@@ -582,12 +579,12 @@ function enhancedFallbackParsing(originalInput: string, preprocessedInput: strin
  */
 export function formatDueDate(timestamp: number | null | undefined): string | undefined {
   if (!timestamp) return undefined;
-  
+
   try {
     const date = new Date(timestamp);
-    
+
     if (isNaN(date.getTime())) return undefined;
-    
+
     // Format: "March 10, 2025 at 10:56 PM"
     return date.toLocaleString('en-US', {
       year: 'numeric',
@@ -612,27 +609,27 @@ export function formatDueDate(timestamp: number | null | undefined): string | un
  */
 export function formatRelativeTime(timestamp: string | number): string {
   if (!timestamp) return 'Unknown';
-  
+
   const timestampNum = typeof timestamp === 'string' ? parseInt(timestamp, 10) : timestamp;
   const now = Date.now();
   const diffMs = now - timestampNum;
-  
+
   // Convert to appropriate time unit
   const diffSec = Math.floor(diffMs / 1000);
   if (diffSec < 60) return `${diffSec} seconds ago`;
-  
+
   const diffMin = Math.floor(diffSec / 60);
   if (diffMin < 60) return `${diffMin} minutes ago`;
-  
+
   const diffHour = Math.floor(diffMin / 60);
   if (diffHour < 24) return `${diffHour} hours ago`;
-  
+
   const diffDays = Math.floor(diffHour / 24);
   if (diffDays < 30) return `${diffDays} days ago`;
-  
+
   const diffMonths = Math.floor(diffDays / 30);
   if (diffMonths < 12) return `${diffMonths} months ago`;
-  
+
   const diffYears = Math.floor(diffMonths / 12);
   return `${diffYears} years ago`;
 } 

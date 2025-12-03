@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * ClickUp MCP List Tools
  * 
  * This module defines list-related tools including creating, updating,
@@ -9,8 +6,8 @@
  * and in folders.
  */
 
-import { 
-  CreateListData, 
+import {
+  CreateListData,
   ClickUpList
 } from '../services/clickup/types.js';
 import { listService, workspaceService } from '../services/shared.js';
@@ -89,7 +86,7 @@ export const createListInFolderTool = {
         description: "ID of the space containing the folder. Required when using folderName instead of folderId."
       },
       spaceName: {
-        type: "string", 
+        type: "string",
         description: "Name of the space containing the folder. Required when using folderName instead of folderId."
       },
       content: {
@@ -201,14 +198,14 @@ export async function findListIDByName(workspaceService: any, listName: string):
  */
 export async function handleCreateList(parameters: any) {
   const { name, spaceId, spaceName, content, dueDate, priority, assignee, status } = parameters;
-  
+
   // Validate required fields
   if (!name) {
     throw new Error("List name is required");
   }
-  
+
   let targetSpaceId = spaceId;
-  
+
   // If no spaceId but spaceName is provided, look up the space ID
   if (!targetSpaceId && spaceName) {
     const spaceIdResult = await workspaceService.findSpaceIDByName(spaceName);
@@ -217,7 +214,7 @@ export async function handleCreateList(parameters: any) {
     }
     targetSpaceId = spaceIdResult;
   }
-  
+
   if (!targetSpaceId) {
     throw new Error("Either spaceId or spaceName must be provided");
   }
@@ -237,7 +234,7 @@ export async function handleCreateList(parameters: any) {
   try {
     // Create the list
     const newList = await listService.createList(targetSpaceId, listData);
-    
+
     return sponsorService.createResponse({
       id: newList.id,
       name: newList.name,
@@ -260,18 +257,18 @@ export async function handleCreateList(parameters: any) {
  */
 export async function handleCreateListInFolder(parameters: any) {
   const { name, folderId, folderName, spaceId, spaceName, content, status } = parameters;
-  
+
   // Validate required fields
   if (!name) {
     throw new Error("List name is required");
   }
-  
+
   let targetFolderId = folderId;
-  
+
   // If no folderId but folderName is provided, look up the folder ID
   if (!targetFolderId && folderName) {
     let targetSpaceId = spaceId;
-    
+
     // If no spaceId provided but spaceName is, look up the space ID first
     if (!targetSpaceId && spaceName) {
       const spaceIdResult = await workspaceService.findSpaceByName(spaceName);
@@ -280,11 +277,11 @@ export async function handleCreateListInFolder(parameters: any) {
       }
       targetSpaceId = spaceIdResult.id;
     }
-    
+
     if (!targetSpaceId) {
       throw new Error("When using folderName to identify a folder, you must also provide either spaceId or spaceName to locate the correct folder. This is because folder names might not be unique across different spaces.");
     }
-    
+
     // Find the folder in the workspace hierarchy
     const hierarchy = await workspaceService.getWorkspaceHierarchy();
     const folderInfo = workspaceService.findIDByNameInHierarchy(hierarchy, folderName, 'folder');
@@ -293,7 +290,7 @@ export async function handleCreateListInFolder(parameters: any) {
     }
     targetFolderId = folderInfo.id;
   }
-  
+
   if (!targetFolderId) {
     throw new Error("Either folderId or folderName must be provided");
   }
@@ -310,7 +307,7 @@ export async function handleCreateListInFolder(parameters: any) {
   try {
     // Create the list in the folder
     const newList = await listService.createListInFolder(targetFolderId, listData);
-    
+
     return sponsorService.createResponse({
       id: newList.id,
       name: newList.name,
@@ -337,9 +334,9 @@ export async function handleCreateListInFolder(parameters: any) {
  */
 export async function handleGetList(parameters: any) {
   const { listId, listName } = parameters;
-  
+
   let targetListId = listId;
-  
+
   // If no listId provided but listName is, look up the list ID
   if (!targetListId && listName) {
     const listResult = await findListIDByName(workspaceService, listName);
@@ -348,7 +345,7 @@ export async function handleGetList(parameters: any) {
     }
     targetListId = listResult.id;
   }
-  
+
   if (!targetListId) {
     throw new Error("Either listId or listName must be provided");
   }
@@ -356,7 +353,7 @@ export async function handleGetList(parameters: any) {
   try {
     // Get the list
     const list = await listService.getList(targetListId);
-    
+
     return sponsorService.createResponse({
       id: list.id,
       name: list.name,
@@ -378,9 +375,9 @@ export async function handleGetList(parameters: any) {
  */
 export async function handleUpdateList(parameters: any) {
   const { listId, listName, name, content, status } = parameters;
-  
+
   let targetListId = listId;
-  
+
   // If no listId provided but listName is, look up the list ID
   if (!targetListId && listName) {
     const listResult = await findListIDByName(workspaceService, listName);
@@ -389,11 +386,11 @@ export async function handleUpdateList(parameters: any) {
     }
     targetListId = listResult.id;
   }
-  
+
   if (!targetListId) {
     throw new Error("Either listId or listName must be provided");
   }
-  
+
   // Ensure at least one update field is provided
   if (!name && !content && !status) {
     throw new Error("At least one of name, content, or status must be provided for update");
@@ -408,7 +405,7 @@ export async function handleUpdateList(parameters: any) {
   try {
     // Update the list
     const updatedList = await listService.updateList(targetListId, updateData);
-    
+
     return sponsorService.createResponse({
       id: updatedList.id,
       name: updatedList.name,
@@ -431,9 +428,9 @@ export async function handleUpdateList(parameters: any) {
  */
 export async function handleDeleteList(parameters: any) {
   const { listId, listName } = parameters;
-  
+
   let targetListId = listId;
-  
+
   // If no listId provided but listName is, look up the list ID
   if (!targetListId && listName) {
     const listResult = await findListIDByName(workspaceService, listName);
@@ -442,7 +439,7 @@ export async function handleDeleteList(parameters: any) {
     }
     targetListId = listResult.id;
   }
-  
+
   if (!targetListId) {
     throw new Error("Either listId or listName must be provided");
   }
@@ -451,10 +448,10 @@ export async function handleDeleteList(parameters: any) {
     // Get list details before deletion for confirmation message
     const list = await listService.getList(targetListId);
     const listName = list.name;
-    
+
     // Delete the list
     await listService.deleteList(targetListId);
-    
+
     return sponsorService.createResponse({
       success: true,
       message: `List "${listName || targetListId}" deleted successfully`

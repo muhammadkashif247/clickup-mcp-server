@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * ClickUp List Service
  * 
  * Handles all operations related to lists in ClickUp, including:
@@ -14,7 +11,7 @@
 
 import { AxiosError } from 'axios';
 import { BaseClickUpService, ErrorCode, ClickUpServiceError, ServiceResponse } from './base.js';
-import { 
+import {
   ClickUpList,
   ClickUpTask,
   CreateListData
@@ -23,7 +20,7 @@ import { WorkspaceService } from './workspace.js';
 
 export class ListService extends BaseClickUpService {
   private workspaceService: WorkspaceService | null = null;
-  
+
   constructor(apiKey: string, teamId: string, baseUrl?: string, workspaceService?: WorkspaceService) {
     super(apiKey, teamId, baseUrl);
     this.workspaceService = workspaceService || null;
@@ -39,7 +36,7 @@ export class ListService extends BaseClickUpService {
     if (error instanceof ClickUpServiceError) {
       return error;
     }
-    
+
     return new ClickUpServiceError(
       message || `List service error: ${error.message}`,
       ErrorCode.UNKNOWN,
@@ -55,7 +52,7 @@ export class ListService extends BaseClickUpService {
    */
   async createList(spaceId: string, listData: CreateListData): Promise<ClickUpList> {
     this.logOperation('createList', { spaceId, ...listData });
-    
+
     try {
       return await this.makeRequest(async () => {
         const response = await this.client.post<ClickUpList>(
@@ -77,7 +74,7 @@ export class ListService extends BaseClickUpService {
    */
   async createListInFolder(folderId: string, listData: CreateListData): Promise<ClickUpList> {
     this.logOperation('createListInFolder', { folderId, ...listData });
-    
+
     try {
       return await this.makeRequest(async () => {
         const response = await this.client.post<ClickUpList>(
@@ -98,7 +95,7 @@ export class ListService extends BaseClickUpService {
    */
   async getList(listId: string): Promise<ClickUpList> {
     this.logOperation('getList', { listId });
-    
+
     try {
       return await this.makeRequest(async () => {
         const response = await this.client.get<ClickUpList>(`/list/${listId}`);
@@ -117,7 +114,7 @@ export class ListService extends BaseClickUpService {
    */
   async updateList(listId: string, updateData: Partial<CreateListData>): Promise<ClickUpList> {
     this.logOperation('updateList', { listId, ...updateData });
-    
+
     try {
       return await this.makeRequest(async () => {
         const response = await this.client.put<ClickUpList>(
@@ -138,12 +135,12 @@ export class ListService extends BaseClickUpService {
    */
   async deleteList(listId: string): Promise<ServiceResponse<void>> {
     this.logOperation('deleteList', { listId });
-    
+
     try {
       await this.makeRequest(async () => {
         await this.client.delete(`/list/${listId}`);
       });
-      
+
       return {
         success: true
       };
@@ -159,7 +156,7 @@ export class ListService extends BaseClickUpService {
    */
   async getListsInSpace(spaceId: string): Promise<ClickUpList[]> {
     this.logOperation('getListsInSpace', { spaceId });
-    
+
     try {
       return await this.makeRequest(async () => {
         const response = await this.client.get<{ lists: ClickUpList[] }>(
@@ -179,7 +176,7 @@ export class ListService extends BaseClickUpService {
    */
   async getListsInFolder(folderId: string): Promise<ClickUpList[]> {
     this.logOperation('getListsInFolder', { folderId });
-    
+
     try {
       return await this.makeRequest(async () => {
         const response = await this.client.get<{ lists: ClickUpList[] }>(
@@ -200,13 +197,13 @@ export class ListService extends BaseClickUpService {
    */
   async findListByNameInSpace(spaceId: string, listName: string): Promise<ClickUpList | null> {
     this.logOperation('findListByNameInSpace', { spaceId, listName });
-    
+
     try {
       const lists = await this.getListsInSpace(spaceId);
-      const matchingList = lists.find(list => 
+      const matchingList = lists.find(list =>
         list.name.toLowerCase() === listName.toLowerCase()
       );
-      
+
       return matchingList || null;
     } catch (error) {
       throw this.handleError(error, `Failed to find list by name in space ${spaceId}`);
@@ -221,13 +218,13 @@ export class ListService extends BaseClickUpService {
    */
   async findListByNameInFolder(folderId: string, listName: string): Promise<ClickUpList | null> {
     this.logOperation('findListByNameInFolder', { folderId, listName });
-    
+
     try {
       const lists = await this.getListsInFolder(folderId);
-      const matchingList = lists.find(list => 
+      const matchingList = lists.find(list =>
         list.name.toLowerCase() === listName.toLowerCase()
       );
-      
+
       return matchingList || null;
     } catch (error) {
       throw this.handleError(error, `Failed to find list by name in folder ${folderId}`);

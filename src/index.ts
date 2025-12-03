@@ -1,9 +1,6 @@
 #!/usr/bin/env node
 
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * ClickUp MCP Server
  * 
  * This custom server implements the Model Context Protocol (MCP) specification to enable

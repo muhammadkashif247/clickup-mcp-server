@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * ClickUp MCP Bulk Task Operations
  * 
  * This module defines tools for bulk task operations including creating,
@@ -12,8 +9,8 @@ import { TaskPriority } from '../../services/clickup/types.js';
 import { clickUpServices } from '../../services/shared.js';
 import { BulkService } from '../../services/clickup/bulk.js';
 import { parseDueDate } from '../utils.js';
-import { 
-  validateBulkTasks, 
+import {
+  validateBulkTasks,
   parseBulkOptions,
   validateTaskIdentification,
   validateListIdentification,
@@ -39,7 +36,7 @@ const bulkOptionsSchema = {
       description: "Optional processing settings",
       properties: {
         batchSize: {
-          type: "number", 
+          type: "number",
           description: "Tasks per batch (default: 10)"
         },
         concurrency: {

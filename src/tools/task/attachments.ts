@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * ClickUp MCP Task Attachment Tool
  * 
  * This module implements a tool for attaching files to ClickUp tasks
@@ -14,16 +11,16 @@ import { createReadStream } from 'fs';
 import { Stream } from 'stream';
 import { IncomingMessage, request as httpRequest } from 'http';
 import { request as httpsRequest } from 'https';
-import { 
-  ClickUpTask, 
-  ClickUpTaskAttachment 
+import {
+  ClickUpTask,
+  ClickUpTaskAttachment
 } from '../../services/clickup/types.js';
 import { clickUpServices } from '../../services/shared.js';
-import { 
-  ChunkSession, 
-  TaskAttachmentResponse, 
-  ChunkedUploadInitResponse, 
-  ChunkedUploadProgressResponse 
+import {
+  ChunkSession,
+  TaskAttachmentResponse,
+  ChunkedUploadInitResponse,
+  ChunkedUploadProgressResponse
 } from './attachments.types.js';
 import { validateTaskIdentification } from './utilities.js';
 import { sponsorService } from '../../utils/sponsor-service.js';
@@ -42,7 +39,7 @@ const chunkSessions = new Map<string, ChunkSession>();
 setInterval(() => {
   const now = Date.now();
   const expired = 24 * 60 * 60 * 1000; // 24 hours
-  
+
   for (const [token, session] of chunkSessions.entries()) {
     if (now - session.timestamp > expired) {
       chunkSessions.delete(token);
@@ -116,22 +113,22 @@ async function attachTaskFileHandler(params: any): Promise<any> {
   // Extract common parameters
   const { taskId, taskName, listName, customTaskId, file_name, file_data, file_url, auth_header,
     chunk_total, chunk_size, chunk_index, session_id } = params;
-  
+
   // Validate task identification
   const validationResult = validateTaskIdentification(
     { taskId, taskName, listName, customTaskId },
     { useGlobalLookup: true }
   );
-  
+
   if (!validationResult.isValid) {
     throw new Error(validationResult.errorMessage);
   }
-  
+
   // Validate file source - either file_data or file_url must be provided
   if (!file_data && !file_url && !session_id) {
     throw new Error("Either file_data, file_url, or session_id must be provided");
   }
-  
+
   // Resolve task ID
   const result = await taskService.findTasks({
     taskId,
@@ -147,13 +144,13 @@ async function attachTaskFileHandler(params: any): Promise<any> {
   }
 
   const resolvedTaskId = result.id;
-  
+
   try {
     // CASE 1: Chunked upload continuation
     if (session_id) {
       return await handleChunkUpload(resolvedTaskId, session_id, chunk_index, file_data, chunk_total === chunk_index + 1);
     }
-    
+
     // CASE 2: URL-based upload or local file path
     if (file_url) {
       // Check if it's a local file path
@@ -168,17 +165,17 @@ async function attachTaskFileHandler(params: any): Promise<any> {
         throw new Error(`Invalid file_url format: "${file_url}". The file_url parameter must be either an absolute file path (starting with / or drive letter) or a web URL (starting with http:// or https://)`);
       }
     }
-    
+
     // CASE 3: Base64 upload (with automatic chunking for large files)
     if (file_data) {
       if (!file_name) {
         throw new Error("file_name is required when using file_data");
       }
-      
+
       // Check if we need to use chunking (file > 10MB)
       const fileBuffer = Buffer.from(file_data, 'base64');
       const fileSize = fileBuffer.length;
-      
+
       if (fileSize > 10 * 1024 * 1024) {
         // For large files, start chunked upload process
         return await startChunkedUpload(resolvedTaskId, file_name, fileBuffer);
@@ -187,7 +184,7 @@ async function attachTaskFileHandler(params: any): Promise<any> {
         return await handleDirectUpload(resolvedTaskId, file_name, fileBuffer);
       }
     }
-    
+
     throw new Error("Invalid parameters: Unable to determine upload method");
   } catch (error) {
     logger.error(`Error attaching file to task:`, error);
@@ -202,7 +199,7 @@ async function handleDirectUpload(taskId: string, fileName: string, fileBuffer: 
   try {
     // Call service method
     const result = await taskService.uploadTaskAttachment(taskId, fileBuffer, fileName);
-    
+
     return {
       success: true,
       message: `File "${fileName}" successfully attached to task ${taskId}`,
@@ -220,10 +217,10 @@ async function handleUrlUpload(taskId: string, fileUrl: string, fileName: string
   try {
     // Extract filename from URL if not provided
     const extractedFileName = fileName || new URL(fileUrl).pathname.split('/').pop() || 'downloaded-file';
-    
+
     // Call service method
     const result = await taskService.uploadTaskAttachmentFromUrl(taskId, fileUrl, extractedFileName, authHeader);
-    
+
     return {
       success: true,
       message: `File from "${fileUrl}" successfully attached to task ${taskId}`,
@@ -243,17 +240,17 @@ async function handleUrlUpload(taskId: string, fileUrl: string, fileName: string
 async function startChunkedUpload(taskId: string, fileName: string, fileBuffer: Buffer): Promise<ChunkedUploadInitResponse> {
   // Generate a session token
   const sessionToken = `chunk_session_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
-  
+
   // Store the file in chunks (for demonstration - in production would store chunk info only)
   // Split the file into chunks for storage
   const chunkSize = 5 * 1024 * 1024; // 5MB chunks
   const chunksMap = new Map<number, Buffer>();
-  
+
   for (let i = 0; i < fileBuffer.length; i += chunkSize) {
     const chunk = fileBuffer.slice(i, i + chunkSize);
     chunksMap.set(Math.floor(i / chunkSize), chunk);
   }
-  
+
   // Create a new session
   chunkSessions.set(sessionToken, {
     taskId,
@@ -262,7 +259,7 @@ async function startChunkedUpload(taskId: string, fileName: string, fileBuffer: 
     chunks: chunksMap,
     timestamp: Date.now()
   });
-  
+
   // Return initial chunk
   return {
     success: true,
@@ -296,30 +293,30 @@ async function handleChunkUpload(
   if (!session) {
     throw new Error("Upload session not found or expired");
   }
-  
+
   // If this is the last chunk or all chunks are uploaded, finalize the upload
   if (isLastChunk || (session.chunks.size === 1 && chunkIndex === undefined)) {
     // Combine all chunks
     const fileData = Buffer.allocUnsafe(session.fileSize);
     let offset = 0;
-    
+
     // Sort chunks by index
     const sortedChunks = Array.from(session.chunks.entries())
       .sort((a, b) => a[0] - b[0]);
-    
+
     for (const entry of sortedChunks) {
       const [index, chunk] = entry;
       chunk.copy(fileData, offset);
       offset += chunk.length;
     }
-    
+
     try {
       // Call service method
       const result = await taskService.uploadTaskAttachment(session.taskId, fileData, session.fileName);
-      
+
       // Clean up the session
       chunkSessions.delete(sessionToken);
-      
+
       return {
         success: true,
         message: `File "${session.fileName}" successfully attached to task ${session.taskId}`,
@@ -329,17 +326,17 @@ async function handleChunkUpload(
       throw new Error(`Failed to upload file: ${error.message}`);
     }
   }
-  
+
   // Otherwise handle the current chunk
   if (chunkIndex === undefined || chunkData === undefined) {
     throw new Error("chunk_index and chunk_data are required for chunk uploads");
   }
-  
+
   // Store the chunk
   // (In a real implementation, we'd append to a temp file or storage)
   session.chunks.delete(chunkIndex); // Remove the chunk if it exists
   session.chunks.set(chunkIndex, Buffer.from(chunkData, 'base64'));
-  
+
   return {
     success: true,
     message: `Chunk ${chunkIndex + 1}/${session.chunks.size} received`,
@@ -362,32 +359,32 @@ async function handleLocalFileUpload(taskId: string, filePath: string, fileName:
     // Import fs and path modules
     const fs = await import('fs');
     const path = await import('path');
-    
+
     logger.debug(`Processing absolute file path: ${filePath}`);
-    
+
     // Normalize the path to prevent directory traversal attacks
     const normalizedPath = path.normalize(filePath);
-    
+
     // Check if file exists
     if (!fs.existsSync(normalizedPath)) {
       throw new Error(`Local file not found: ${normalizedPath}`);
     }
-    
+
     // Validate file stats
     const stats = fs.statSync(normalizedPath);
     if (!stats.isFile()) {
       throw new Error(`Path is not a file: ${normalizedPath}`);
     }
-    
+
     // Get file name if not provided
     const extractedFileName = fileName || path.basename(normalizedPath);
-    
+
     // Read file
     const fileBuffer = fs.readFileSync(normalizedPath);
     const fileSize = fileBuffer.length;
-    
+
     logger.debug(`Successfully read file: ${extractedFileName} (${fileSize} bytes)`);
-    
+
     // Choose upload method based on file size
     if (fileSize > 10 * 1024 * 1024) {
       // For large files, start chunked upload process

@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * Concurrency Utilities
  * 
  * This module provides utilities for handling concurrent operations,
@@ -80,7 +77,7 @@ export async function processBatch<T, R>(
     retryCount: options?.retryCount ?? 3,
     retryDelay: options?.retryDelay ?? 1000,
     exponentialBackoff: options?.exponentialBackoff ?? true,
-    progressCallback: options?.progressCallback ?? (() => {})
+    progressCallback: options?.progressCallback ?? (() => { })
   };
 
   // Initialize results
@@ -115,7 +112,7 @@ export async function processBatch<T, R>(
       const startIdx = batchIndex * opts.batchSize;
       const endIdx = Math.min(startIdx + opts.batchSize, items.length);
       const batch = items.slice(startIdx, endIdx);
-      
+
       logger.debug(`Processing batch ${batchIndex + 1}/${totalBatches}`, {
         batchSize: batch.length,
         startIdx,
@@ -124,9 +121,9 @@ export async function processBatch<T, R>(
 
       // Process the current batch
       const batchResults = await processSingleBatch(
-        batch, 
+        batch,
         processor,
-        startIdx, 
+        startIdx,
         opts
       );
 
@@ -147,9 +144,9 @@ export async function processBatch<T, R>(
       // Update progress
       processedItems += batch.length;
       opts.progressCallback(
-        processedItems, 
-        items.length, 
-        result.totals.success, 
+        processedItems,
+        items.length,
+        result.totals.success,
         result.totals.failure
       );
     }
@@ -214,7 +211,7 @@ async function processSingleBatch<T, R>(
     // Process items in concurrent chunks
     for (let i = 0; i < batch.length; i += opts.concurrency) {
       const concurrentBatch = batch.slice(i, Math.min(i + opts.concurrency, batch.length));
-      
+
       // Create a promise for each item in the concurrent batch
       const promises = concurrentBatch.map((item, idx) => {
         const index = startIndex + i + idx;
@@ -228,11 +225,11 @@ async function processSingleBatch<T, R>(
 
       // Wait for all promises to settle (either resolve or reject)
       const results = await Promise.allSettled(promises);
-      
+
       // Process the results
       results.forEach((promiseResult, idx) => {
         const index = startIndex + i + idx;
-        
+
         if (promiseResult.status === 'fulfilled') {
           // Operation succeeded
           result.successful.push(promiseResult.value);
@@ -240,13 +237,13 @@ async function processSingleBatch<T, R>(
         } else {
           // Operation failed
           const error = promiseResult.reason as Error;
-          result.failed.push({ 
-            item: batch[i + idx], 
-            error, 
-            index 
+          result.failed.push({
+            item: batch[i + idx],
+            error,
+            index
           });
           result.totals.failure++;
-          
+
           // If continueOnError is false, stop processing
           if (!opts.continueOnError) {
             throw new Error(`Operation failed at index ${index}: ${error.message || String(error)}`);
@@ -254,7 +251,7 @@ async function processSingleBatch<T, R>(
         }
       });
     }
-    
+
     return result;
   } catch (error) {
     logger.error(`Error in batch processing`, {
@@ -262,25 +259,25 @@ async function processSingleBatch<T, R>(
       startIndex,
       error: error instanceof Error ? error.message : String(error)
     });
-    
+
     // If we've hit an error that stopped the whole batch (continueOnError=false),
     // we need to record any unprocessed items as failures
     const processedCount = result.totals.success + result.totals.failure;
-    
+
     if (processedCount < batch.length) {
       const remainingItems = batch.slice(processedCount);
       for (let i = 0; i < remainingItems.length; i++) {
         const index = startIndex + processedCount + i;
         result.failed.push({
           item: remainingItems[i],
-          error: new Error('Batch processing aborted: ' + 
+          error: new Error('Batch processing aborted: ' +
             (error instanceof Error ? error.message : String(error))),
           index
         });
         result.totals.failure++;
       }
     }
-    
+
     return result;
   }
 }
@@ -312,36 +309,36 @@ async function processWithRetry<R>(
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       lastError = err;
-      
+
       logger.warn(`Operation failed for item at index ${index}`, {
         attempt: attempts,
         maxAttempts: options.retryCount + 1,
         error: err.message
       });
-      
+
       // If this was our last attempt, don't delay, just throw
       if (attempts > options.retryCount) {
         break;
       }
-      
+
       // Calculate delay for next retry
       let delay = options.retryDelay;
       if (options.exponentialBackoff) {
         // Use exponential backoff with jitter
         delay = options.retryDelay * Math.pow(2, attempts - 1) + Math.random() * 1000;
       }
-      
+
       logger.debug(`Retrying operation after delay`, {
         index,
         attempt: attempts,
         delayMs: delay
       });
-      
+
       // Wait before next attempt
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
-  
+
   // If we get here, all retry attempts failed
   throw new Error(
     `Operation failed after ${attempts} attempts for item at index ${index}: ` +

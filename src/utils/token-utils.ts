@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * Token Utilities
  * 
  * Functions for estimating token counts for LLM processing
@@ -16,14 +13,14 @@
  */
 export function estimateTokensFromText(text: string): number {
   if (!text) return 0;
-  
+
   // Characters per token varies by language, but ~4 chars per token
   // is a reasonable approximation for English text
   const CHARS_PER_TOKEN = 4;
-  
+
   // Add some overhead for non-text elements and special tokens
   const OVERHEAD_FACTOR = 1.1;
-  
+
   return Math.ceil((text.length / CHARS_PER_TOKEN) * OVERHEAD_FACTOR);
 }
 
@@ -36,7 +33,7 @@ export function estimateTokensFromText(text: string): number {
 export function estimateTokensFromObject(obj: any): number {
   // Convert to JSON string
   const jsonString = JSON.stringify(obj);
-  
+
   // Use text estimation on the JSON string
   // JSON has more special chars than plain text, so we adjust overhead
   return Math.ceil(estimateTokensFromText(jsonString) * 1.2);

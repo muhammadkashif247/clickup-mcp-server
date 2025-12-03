@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * ClickUp Task Service - Tags Module
  *
  * Handles tag operations for ClickUp tasks, including:
@@ -22,7 +19,7 @@ import { ClickUpTag } from '../types.js';
  * It uses composition to access core functionality instead of inheritance.
  */
 export class TaskServiceTags {
-  constructor(private core: TaskServiceCore) {}
+  constructor(private core: TaskServiceCore) { }
   /**
    * Add a tag to a task
    *

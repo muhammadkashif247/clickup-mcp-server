@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * ClickUp MCP Task Tools
  * 
  * This module re-exports all task-related tools and handlers.
@@ -11,7 +8,7 @@
 export * from './main.js';
 
 // Re-export single task operation tools
-export { 
+export {
   createTaskTool,
   getTaskTool,
   getTasksTool,
@@ -72,13 +69,13 @@ export {
   deleteTaskHandler,
   getTaskCommentsHandler,
   createTaskCommentHandler,
-  
+
   // Bulk task operation handlers
   createBulkTasksHandler,
   updateBulkTasksHandler,
   moveBulkTasksHandler,
   deleteBulkTasksHandler,
-  
+
   // Team task operation handlers
   getWorkspaceTasksHandler
 } from './handlers.js';

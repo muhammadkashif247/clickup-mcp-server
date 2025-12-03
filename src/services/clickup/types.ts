@@ -1,7 +1,4 @@
 /**
- * SPDX-FileCopyrightText: © 2025 Talib Kareem <taazkareem@icloud.com>
- * SPDX-License-Identifier: MIT
- *
  * Common type definitions for ClickUp API entities
  */
 
@@ -20,15 +17,15 @@ export function toTaskPriority(value: unknown): TaskPriority | undefined {
   if (value === null) return null;
   if (value === undefined) return undefined;
   if (value === "null") return null;
-  
+
   // Convert string to number if needed
   const numValue = typeof value === 'string' ? parseInt(value, 10) : value;
-  
+
   // Validate it's a valid priority number
   if (typeof numValue === 'number' && !isNaN(numValue) && [1, 2, 3, 4].includes(numValue)) {
     return numValue as TaskPriority;
   }
-  
+
   return undefined;
 }
 
@@ -485,9 +482,9 @@ export interface ChunkedUploadProgressResponse {
 /**
  * Union type for all possible attachment responses
  */
-export type AttachmentResponse = 
-  | TaskAttachmentResponse 
-  | ChunkedUploadInitResponse 
+export type AttachmentResponse =
+  | TaskAttachmentResponse
+  | ChunkedUploadInitResponse
   | ChunkedUploadProgressResponse;
 
 /**
