@@ -3,17 +3,18 @@
  * 
  * This module provides tools for time tracking operations on ClickUp tasks:
  * - Get time entries for a task
+ * - Get aggregated time report for a member
  * - Start time tracking on a task
  * - Stop time tracking
  * - Add a manual time entry
  * - Delete a time entry
  */
 
-import { timeTrackingService } from "../../services/shared.js";
+import { timeTrackingService, workspaceService } from "../../services/shared.js";
 import { getTaskId } from "./utilities.js";
 import { Logger } from "../../logger.js";
 import { ErrorCode } from "../../services/clickup/base.js";
-import { formatDueDate, parseDueDate } from "../../utils/date-utils.js";
+import { formatDueDate, parseDueDate, parseDateRangeForReport } from "../../utils/date-utils.js";
 import { sponsorService } from "../../utils/sponsor-service.js";
 
 // Logger instance
@@ -192,6 +193,44 @@ export const getCurrentTimeEntryTool = {
   inputSchema: {
     type: "object",
     properties: {}
+  }
+};
+
+/**
+ * Tool definition for getting a member time report
+ */
+export const getMemberTimeReportTool = {
+  name: "get_member_time_report",
+  description: "Gets an aggregated time report for a ClickUp user across all tasks within the given date range. You can provide a member name/email for automatic lookup, or use assigneeId directly. Supports keywords like 'today', 'yesterday', 'this week' for date ranges.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      memberName: {
+        type: "string",
+        description: "Name of the member to report on (e.g., 'muhammad kashif'). Will be auto-resolved to ClickUp user ID."
+      },
+      memberEmail: {
+        type: "string",
+        description: "Email of the member to report on. Will be auto-resolved to ClickUp user ID."
+      },
+      assigneeId: {
+        type: "string",
+        description: "ClickUp user ID of the assignee. Only needed if memberName/memberEmail is not provided."
+      },
+      startDate: {
+        type: "string",
+        description: "Start date. Supports keywords like 'today', 'yesterday', 'this week', or specific dates/timestamps."
+      },
+      endDate: {
+        type: "string",
+        description: "End date. Supports keywords like 'today', 'yesterday', 'now', or specific dates/timestamps."
+      },
+      timezone: {
+        type: "string",
+        description: "Timezone for date calculations (e.g., 'Asia/Karachi', 'PKT', 'GMT+5'). Defaults to 'Asia/Karachi' (GMT+5)."
+      }
+    },
+    required: ["startDate", "endDate"]
   }
 };
 
@@ -542,6 +581,185 @@ export async function handleGetCurrentTimeEntry(params?: any) {
 }
 
 /**
+ * Handle get member time report tool
+ */
+export async function handleGetMemberTimeReport(params: any) {
+  logger.info("Handling request to get member time report", params);
+
+  try {
+    const { memberName, memberEmail, assigneeId, startDate, endDate, timezone = 'Asia/Karachi' } = params || {};
+
+    if (!startDate || !endDate) {
+      return sponsorService.createErrorResponse("Both startDate and endDate are required.");
+    }
+
+    // Resolve member ID from name/email if not provided directly
+    let resolvedAssigneeId = assigneeId;
+    let memberInfo: { id: number; username: string; email: string } | null = null;
+
+    if (!resolvedAssigneeId) {
+      if (!memberName && !memberEmail) {
+        return sponsorService.createErrorResponse(
+          "Please provide either memberName, memberEmail, or assigneeId to identify the user."
+        );
+      }
+
+      // Look up member in workspace
+      try {
+        const members = await workspaceService.getWorkspaceMembers();
+        const searchTerm = (memberName || memberEmail || '').toLowerCase();
+        
+        memberInfo = members.find((m: any) => 
+          m.email?.toLowerCase() === searchTerm ||
+          m.username?.toLowerCase() === searchTerm ||
+          m.username?.toLowerCase().includes(searchTerm) ||
+          (m.username?.toLowerCase().replace(/\s+/g, '') === searchTerm.replace(/\s+/g, ''))
+        ) || null;
+
+        if (!memberInfo) {
+          // Try partial name match
+          memberInfo = members.find((m: any) => {
+            const memberUsername = (m.username || '').toLowerCase();
+            const memberEmail = (m.email || '').toLowerCase();
+            return memberUsername.includes(searchTerm) || 
+                   searchTerm.includes(memberUsername) ||
+                   memberEmail.includes(searchTerm);
+          }) || null;
+        }
+
+        if (!memberInfo) {
+          return sponsorService.createErrorResponse(
+            `Member not found: ${memberName || memberEmail}. Use get_workspace_members to see available members.`
+          );
+        }
+
+        resolvedAssigneeId = String(memberInfo.id);
+        logger.info(`Resolved member "${memberName || memberEmail}" to ID ${resolvedAssigneeId}`);
+      } catch (lookupError) {
+        logger.error("Failed to lookup member", lookupError);
+        return sponsorService.createErrorResponse(
+          `Failed to lookup member: ${(lookupError as Error).message}`
+        );
+      }
+    }
+
+    // Parse date range with timezone-aware handling
+    let dateRange;
+    try {
+      dateRange = parseDateRangeForReport(startDate, endDate, timezone);
+      logger.info(`Date range for report: ${dateRange.startFormatted} to ${dateRange.endFormatted}`);
+    } catch (dateError) {
+      return sponsorService.createErrorResponse(
+        `Invalid date range: ${(dateError as Error).message}`
+      );
+    }
+
+    const { startMs, endMs, startFormatted, endFormatted } = dateRange;
+
+    if (startMs > endMs) {
+      return sponsorService.createErrorResponse("startDate must be before or equal to endDate.");
+    }
+
+    logger.info(`Fetching time entries for assignee ${resolvedAssigneeId} from ${startMs} to ${endMs}`);
+    const result = await timeTrackingService.getTeamTimeEntries(resolvedAssigneeId, startMs, endMs);
+
+    if (!result.success) {
+      return sponsorService.createErrorResponse(result.error?.message || "Failed to get team time entries");
+    }
+
+    const timeEntries = result.data || [];
+    logger.info(`Retrieved ${timeEntries.length} time entries`);
+
+    // Aggregate by task
+    const taskMap: Record<string, {
+      id: string;
+      code: string;
+      name: string;
+      status: string;
+      url: string;
+      timeMs: number;
+    }> = {};
+
+    let totalTimeMs = 0;
+
+    for (const entry of timeEntries) {
+      const task = entry.task;
+      if (!task?.id) continue;
+
+      const taskId = String(task.id);
+      const taskName = task.name || "Unnamed Task";
+      const taskCode = task.custom_id || taskId;
+      const taskStatus = task.status?.status || "Unknown";
+      const taskUrl = `https://app.clickup.com/t/${task.custom_id || task.id}`;
+      const duration = Number(entry.duration || 0);
+
+      totalTimeMs += duration;
+
+      if (!taskMap[taskId]) {
+        taskMap[taskId] = {
+          id: taskId,
+          code: taskCode,
+          name: taskName,
+          status: taskStatus,
+          url: taskUrl,
+          timeMs: 0
+        };
+      }
+
+      taskMap[taskId].timeMs += duration;
+    }
+
+    const summaryLines = Object.values(taskMap).map(task => {
+      const hrs = (task.timeMs / 3_600_000).toFixed(2);
+      const safeName = sanitizeTitle(task.name);
+      return `- [${task.code}: ${safeName}](${task.url}) — ${task.status} — ⏱ ${hrs} hrs`;
+    });
+
+    const totalTimeHrs = (totalTimeMs / 3_600_000).toFixed(2);
+    
+    // Format total time as hours and minutes for easier reading
+    const hours = Math.floor(totalTimeMs / 3_600_000);
+    const minutes = Math.floor((totalTimeMs % 3_600_000) / 60_000);
+    const totalTimeFormatted = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+
+    return sponsorService.createResponse({
+      success: true,
+      member: memberInfo ? {
+        id: memberInfo.id,
+        username: memberInfo.username,
+        email: memberInfo.email
+      } : null,
+      assignee_id: resolvedAssigneeId,
+      date_range: {
+        start: startFormatted,
+        end: endFormatted,
+        timezone
+      },
+      total_time_ms: totalTimeMs,
+      total_time_hours: Number(totalTimeHrs),
+      total_time_formatted: totalTimeFormatted,
+      task_count: Object.keys(taskMap).length,
+      summary_lines: summaryLines,
+      summary_markdown: summaryLines.length > 0 
+        ? `**Total: ${totalTimeFormatted}**\n\n${summaryLines.join("\n")}`
+        : "No tasks logged in the given range.",
+      tasks: Object.values(taskMap).map(task => ({
+        id: task.id,
+        code: task.code,
+        name: task.name,
+        status: task.status,
+        url: task.url,
+        time_ms: task.timeMs,
+        time_hours: Number((task.timeMs / 3_600_000).toFixed(2))
+      }))
+    }, true);
+  } catch (error) {
+    logger.error("Error getting member time report", error);
+    return sponsorService.createErrorResponse((error as Error).message || "An unknown error occurred");
+  }
+}
+
+/**
  * Calculate elapsed time in milliseconds from a start time string to now
  */
 function calculateElapsedTime(startTimeString: string): number {
@@ -568,6 +786,26 @@ function formatDuration(durationMs: number): string {
   } else {
     return `${hours}h ${remainingMinutes}m`;
   }
+}
+
+/**
+ * Sanitize task titles for safe markdown output
+ * Mirrors the behavior used in the existing n8n workflow.
+ */
+function sanitizeTitle(input: string, options: { maxLen?: number } = {}): string {
+  const { maxLen = 140 } = options;
+  if (typeof input !== "string") return "";
+
+  // 1) Normalize and remove diacritics
+  let s = input.normalize("NFKD").replace(/\p{M}+/gu, "");
+  // 2) Replace newlines/tabs with spaces
+  s = s.replace(/[\r\n\t]+/g, " ");
+  // 3) Keep only safe characters
+  s = s.replace(/[^A-Za-z0-9 \-_.:/|&+]/g, "");
+  // 4) Collapse spaces and trim
+  s = s.replace(/\s{2,}/g, " ").trim();
+  // 5) Length cap
+  return s.slice(0, maxLen);
 }
 
 /**
@@ -613,6 +851,7 @@ function parseDuration(durationString: string): number {
 // Export all time tracking tools
 export const timeTrackingTools = [
   getTaskTimeEntriesTool,
+  getMemberTimeReportTool,
   startTimeTrackingTool,
   stopTimeTrackingTool,
   addTimeEntryTool,
@@ -623,6 +862,7 @@ export const timeTrackingTools = [
 // Export all time tracking handlers
 export const timeTrackingHandlers = {
   get_task_time_entries: handleGetTaskTimeEntries,
+  get_member_time_report: handleGetMemberTimeReport,
   start_time_tracking: handleStartTimeTracking,
   stop_time_tracking: handleStopTimeTracking,
   add_time_entry: handleAddTimeEntry,
