@@ -37,6 +37,7 @@ export {
 export {
   getTaskTimeEntriesTool,
   getMemberTimeReportTool,
+  getTeamTimeReportTool,
   startTimeTrackingTool,
   stopTimeTrackingTool,
   addTimeEntryTool,
@@ -44,6 +45,7 @@ export {
   getCurrentTimeEntryTool,
   handleGetTaskTimeEntries,
   handleGetMemberTimeReport,
+  handleGetTeamTimeReport,
   handleStartTimeTracking,
   handleStopTimeTracking,
   handleAddTimeEntry,

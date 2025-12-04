@@ -77,6 +77,9 @@ interface Config {
   ssePort: number;
   enableStdio: boolean;
   port?: string;
+  // Team structure configuration (for team time reports)
+  clickupAllocationListId: string;
+  clickupTeamLeadTierId: string;
   // Security configuration (opt-in for backwards compatibility)
   enableSecurityFeatures: boolean;
   enableOriginValidation: boolean;
@@ -130,6 +133,9 @@ const configuration: Config = {
   ssePort: parseInteger(envArgs.ssePort || process.env.SSE_PORT, 3000),
   enableStdio: parseBoolean(envArgs.enableStdio || process.env.ENABLE_STDIO, true),
   port: envArgs.port || process.env.PORT || '3231',
+  // Team structure configuration (for team time reports)
+  clickupAllocationListId: process.env.CLICKUP_ALLOCATION_LIST_ID || '157304569',
+  clickupTeamLeadTierId: process.env.CLICKUP_TL_TIER_ID || '9522fd1b-b869-4c86-840f-24147b73e30a',
   // Security configuration (opt-in for backwards compatibility)
   enableSecurityFeatures: parseBoolean(process.env.ENABLE_SECURITY_FEATURES, false),
   enableOriginValidation: parseBoolean(process.env.ENABLE_ORIGIN_VALIDATION, false),
