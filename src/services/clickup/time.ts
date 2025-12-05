@@ -71,6 +71,14 @@ export interface TimeEntriesResponse {
 }
 
 /**
+ * Response for listing team time entries
+ * (same shape as task time entries but returned from /team/{teamId}/time_entries)
+ */
+export interface TeamTimeEntriesResponse {
+  data: ClickUpTimeEntry[];
+}
+
+/**
  * Data for starting time tracking
  */
 export interface StartTimeTrackingData {
@@ -149,6 +157,62 @@ export class TimeTrackingService extends BaseClickUpService {
         success: false,
         error: {
           message: `Failed to get time entries: ${(error as Error).message}`,
+          code: ErrorCode.UNKNOWN
+        }
+      };
+    }
+  }
+
+  /**
+   * Get all time entries for a team member across tasks
+   * @param assigneeId ClickUp user ID of the assignee
+   * @param startDate Start date filter (Unix timestamp in milliseconds)
+   * @param endDate End date filter (Unix timestamp in milliseconds)
+   * @returns List of time entries
+   */
+  async getTeamTimeEntries(
+    assigneeId: string,
+    startDate: number,
+    endDate: number
+  ): Promise<ServiceResponse<ClickUpTimeEntry[]>> {
+    try {
+      this.logOperation('getTeamTimeEntries', { assigneeId, startDate, endDate });
+
+      const query: Record<string, any> = {
+        assignee: assigneeId,
+        start_date: startDate,
+        end_date: endDate
+      };
+
+      const path = `/team/${this.teamId}/time_entries`;
+      this.traceRequest('GET', path, query);
+
+      const response = await this.makeRequest<AxiosResponse<TeamTimeEntriesResponse>>(() =>
+        this.client.get(path, {
+          params: query
+        })
+      );
+
+      return {
+        success: true,
+        data: response.data.data
+      };
+    } catch (error) {
+      if (error instanceof ClickUpServiceError) {
+        return {
+          success: false,
+          error: {
+            message: error.message,
+            code: error.code,
+            details: error.data
+          }
+        };
+      }
+
+      return {
+        success: false,
+        error: {
+          message: `Failed to get team time entries: ${(error as Error).message}`,
           code: ErrorCode.UNKNOWN
         }
       };

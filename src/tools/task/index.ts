@@ -36,12 +36,16 @@ export {
 // Re-export time tracking tools and handlers
 export {
   getTaskTimeEntriesTool,
+  getMemberTimeReportTool,
+  getTeamTimeReportTool,
   startTimeTrackingTool,
   stopTimeTrackingTool,
   addTimeEntryTool,
   deleteTimeEntryTool,
   getCurrentTimeEntryTool,
   handleGetTaskTimeEntries,
+  handleGetMemberTimeReport,
+  handleGetTeamTimeReport,
   handleStartTimeTracking,
   handleStopTimeTracking,
   handleAddTimeEntry,

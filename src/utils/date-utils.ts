@@ -632,4 +632,161 @@ export function formatRelativeTime(timestamp: string | number): string {
 
   const diffYears = Math.floor(diffMonths / 12);
   return `${diffYears} years ago`;
-} 
+}
+
+/**
+ * Timezone offset map for common timezones
+ * Offset is in hours from UTC
+ */
+const TIMEZONE_OFFSETS: Record<string, number> = {
+  'UTC': 0,
+  'GMT': 0,
+  'Asia/Karachi': 5,    // Pakistan Standard Time (PKT)
+  'PKT': 5,
+  'GMT+5': 5,
+  'Asia/Kolkata': 5.5,  // India Standard Time (IST)
+  'IST': 5.5,
+  'America/New_York': -5,
+  'EST': -5,
+  'America/Los_Angeles': -8,
+  'PST': -8,
+  'Europe/London': 0,
+  'GMT+0': 0,
+};
+
+/**
+ * Get timezone offset in milliseconds
+ * @param timezone Timezone string (e.g., 'Asia/Karachi', 'GMT+5', 'PKT')
+ * @returns Offset in milliseconds
+ */
+function getTimezoneOffsetMs(timezone: string): number {
+  // Default to GMT+5 (Pakistan Standard Time) based on n8n workflow
+  const offsetHours = TIMEZONE_OFFSETS[timezone] ?? 5;
+  return offsetHours * 60 * 60 * 1000;
+}
+
+/**
+ * Get start of day in a specific timezone as Unix milliseconds
+ * Uses the n8n formula: Date.now() - (Date.now() % 86400000) - (timezoneOffset)
+ * 
+ * @param timezone Timezone string (defaults to 'Asia/Karachi' / GMT+5)
+ * @param daysOffset Number of days to offset (negative for past, positive for future)
+ * @returns Timestamp in milliseconds for start of day
+ */
+export function getStartOfDayInTimezone(timezone: string = 'Asia/Karachi', daysOffset: number = 0): number {
+  const now = Date.now();
+  const timezoneOffsetMs = getTimezoneOffsetMs(timezone);
+  const msPerDay = 86400000;
+  
+  // Calculate start of current day in the specified timezone
+  const startOfDayUtc = now - (now % msPerDay);
+  const startOfDayInTimezone = startOfDayUtc - timezoneOffsetMs;
+  
+  // Apply days offset
+  return startOfDayInTimezone + (daysOffset * msPerDay);
+}
+
+/**
+ * Get end of day in a specific timezone as Unix milliseconds
+ * Uses the n8n formula: startOfDay + 86399999
+ * 
+ * @param timezone Timezone string (defaults to 'Asia/Karachi' / GMT+5)
+ * @param daysOffset Number of days to offset (negative for past, positive for future)
+ * @returns Timestamp in milliseconds for end of day (23:59:59.999)
+ */
+export function getEndOfDayInTimezone(timezone: string = 'Asia/Karachi', daysOffset: number = 0): number {
+  const startOfDay = getStartOfDayInTimezone(timezone, daysOffset);
+  return startOfDay + 86399999; // 23:59:59.999
+}
+
+/**
+ * Date range result for time reports
+ */
+export interface TimeReportDateRange {
+  startMs: number;
+  endMs: number;
+  startFormatted: string;
+  endFormatted: string;
+}
+
+/**
+ * Parse date range for time reports with special keyword support
+ * Handles: 'today', 'yesterday', 'last day', 'this week', 'last week'
+ * 
+ * @param startDate Start date string (can be keyword or date)
+ * @param endDate End date string (can be keyword or date)
+ * @param timezone Timezone string (defaults to 'Asia/Karachi' / GMT+5)
+ * @returns Parsed date range with start and end timestamps
+ */
+export function parseDateRangeForReport(
+  startDate: string,
+  endDate: string,
+  timezone: string = 'Asia/Karachi'
+): TimeReportDateRange {
+  const lowerStart = startDate.toLowerCase().trim();
+  const lowerEnd = endDate.toLowerCase().trim();
+  
+  let startMs: number;
+  let endMs: number;
+  
+  // Handle special keyword combinations
+  if (lowerStart === 'today' && lowerEnd === 'today') {
+    startMs = getStartOfDayInTimezone(timezone, 0);
+    endMs = getEndOfDayInTimezone(timezone, 0);
+  } else if ((lowerStart === 'yesterday' || lowerStart === 'last day') && 
+             (lowerEnd === 'yesterday' || lowerEnd === 'last day' || lowerEnd === 'now' || lowerEnd === 'today')) {
+    startMs = getStartOfDayInTimezone(timezone, -1);
+    // If end is 'now' or 'today', use current time; otherwise use end of yesterday
+    if (lowerEnd === 'now' || lowerEnd === 'today') {
+      endMs = Date.now();
+    } else {
+      endMs = getEndOfDayInTimezone(timezone, -1);
+    }
+  } else if (lowerStart === 'last day' && lowerEnd === 'now') {
+    // "Last day" meaning last 24 hours
+    endMs = Date.now();
+    startMs = endMs - 86400000;
+  } else if (lowerStart === 'this week' && lowerEnd === 'this week') {
+    // Start of this week (Monday) to now
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    startMs = getStartOfDayInTimezone(timezone, -daysToMonday);
+    endMs = Date.now();
+  } else if (lowerStart === 'last week' && lowerEnd === 'last week') {
+    // Full last week (Monday to Sunday)
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    const daysToLastMonday = dayOfWeek === 0 ? 13 : dayOfWeek + 6;
+    startMs = getStartOfDayInTimezone(timezone, -daysToLastMonday);
+    endMs = getEndOfDayInTimezone(timezone, -daysToLastMonday + 6);
+  } else {
+    // Fall back to standard date parsing
+    // For start date, use start of day
+    const parsedStart = parseDueDate(startDate);
+    if (!parsedStart) {
+      throw new Error(`Invalid start date: ${startDate}`);
+    }
+    // Align to start of day
+    const startDateObj = new Date(parsedStart);
+    startDateObj.setHours(0, 0, 0, 0);
+    startMs = startDateObj.getTime();
+    
+    // For end date, use end of day
+    const parsedEnd = parseDueDate(endDate);
+    if (!parsedEnd) {
+      throw new Error(`Invalid end date: ${endDate}`);
+    }
+    // Align to end of day
+    const endDateObj = new Date(parsedEnd);
+    endDateObj.setHours(23, 59, 59, 999);
+    endMs = endDateObj.getTime();
+  }
+  
+  return {
+    startMs,
+    endMs,
+    startFormatted: new Date(startMs).toISOString(),
+    endFormatted: new Date(endMs).toISOString()
+  };
+}

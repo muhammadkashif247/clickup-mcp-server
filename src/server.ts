@@ -28,6 +28,8 @@ import {
   attachTaskFileTool,
   getWorkspaceTasksTool,
   getTaskTimeEntriesTool,
+  getMemberTimeReportTool,
+  getTeamTimeReportTool,
   startTimeTrackingTool,
   stopTimeTrackingTool,
   addTimeEntryTool,
@@ -49,6 +51,8 @@ import {
   handleAttachTaskFile,
   handleGetWorkspaceTasks,
   handleGetTaskTimeEntries,
+  handleGetMemberTimeReport,
+  handleGetTeamTimeReport,
   handleStartTimeTracking,
   handleStopTimeTracking,
   handleAddTimeEntry,
@@ -181,6 +185,8 @@ export function configureServer() {
         deleteBulkTasksTool,
         getWorkspaceTasksTool,
         getTaskTimeEntriesTool,
+        getMemberTimeReportTool,
+        getTeamTimeReportTool,
         startTimeTrackingTool,
         stopTimeTrackingTool,
         addTimeEntryTool,
@@ -297,6 +303,10 @@ export function configureServer() {
           return handleRemoveTagFromTask(params);
         case "get_task_time_entries":
           return handleGetTaskTimeEntries(params);
+        case "get_member_time_report":
+          return handleGetMemberTimeReport(params);
+        case "get_team_time_report":
+          return handleGetTeamTimeReport(params);
         case "start_time_tracking":
           return handleStartTimeTracking(params);
         case "stop_time_tracking":
