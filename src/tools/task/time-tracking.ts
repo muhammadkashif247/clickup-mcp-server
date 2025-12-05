@@ -861,9 +861,18 @@ export async function handleGetTeamTimeReport(params: any) {
     const teamLeadMap: Record<string, TeamLead> = {};
     const teamLeadEmployees: { employee: Employee; teamLeadEmail: string }[] = [];
 
-    // First pass: identify team leads
+    // Status values that indicate resigned/inactive employees (from Phaedrites Allocation list)
+    const excludedStatuses = ['resigned'];
+
+    // First pass: identify team leads (only active ones)
     for (const task of allocationTasks) {
       const customFields = task.custom_fields || [];
+      
+      // Skip if task status indicates resigned/inactive
+      const taskStatus = (task.status?.status || '').toLowerCase();
+      if (excludedStatuses.some(s => taskStatus.includes(s))) {
+        continue;
+      }
       
       // Check if this is a team lead
       const tierField = customFields.find((f: any) => f.name === 'Tier');
@@ -881,9 +890,15 @@ export async function handleGetTeamTimeReport(params: any) {
       }
     }
 
-    // Second pass: assign employees to team leads
+    // Second pass: assign employees to team leads (only active ones)
     for (const task of allocationTasks) {
       const customFields = task.custom_fields || [];
+      
+      // Skip if task status indicates resigned/inactive
+      const taskStatus = (task.status?.status || '').toLowerCase();
+      if (excludedStatuses.some(s => taskStatus.includes(s))) {
+        continue;
+      }
       
       const emailField = customFields.find((f: any) => f.name === 'Phaedra Email');
       const clickupIdField = customFields.find((f: any) => f.name === 'Clickup ID');
